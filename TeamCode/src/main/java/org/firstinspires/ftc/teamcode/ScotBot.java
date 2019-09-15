@@ -59,7 +59,7 @@ public class ScotBot
     public DcMotor  leftBack = null;
     public Servo    phoneRotator = null;
 
-    public static final double MID_SERVO       =  0.5 ;
+    public static final double MID_SERVO       =  0.5;
 
     /* local OpMode members. */
     HardwareMap hwMap           =  null;
@@ -99,8 +99,14 @@ public class ScotBot
         rightBack.setMode(DcMotor.RunMode.RUN_USING_ENCODERS);
 
         // Define and initialize ALL installed servos.
-        phoneRotator = hwMap.get(Servo.class, "phoneservo");
-        phoneRotator.setPosition(MID_SERVO);
+        //phoneRotator = hwMap.get(Servo.class, "phoneservo");
+        //phoneRotator.setPosition(MID_SERVO);
+    }
+
+    //x,y: direction to move from -1,-1 to 1,1
+    //turn: direction to turn from -1 to 1
+    public void mecanumDrive(double x, double y, double turn) {
+        //TODO: make robot move
     }
  }
 
