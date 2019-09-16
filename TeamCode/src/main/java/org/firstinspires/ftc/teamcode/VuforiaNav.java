@@ -109,14 +109,36 @@ public class VuforiaNav {
     final float CAMERA_VERTICAL_DISPLACEMENT = 8.0f * mmPerInch;   // eg: Camera is 8 Inches above ground
     final float CAMERA_LEFT_DISPLACEMENT     = 0;     // eg: Camera is ON the robot's center line
 
-    public void init(HardwareMap hwMap) {
+    private VuforiaLocalizer.Parameters parameters;
+
+    private VuforiaTrackables targetsSkyStone;
+
+    private VuforiaTrackable stoneTarget;
+    private VuforiaTrackable blueRearBridge;
+    private VuforiaTrackable redRearBridge;
+    private VuforiaTrackable redFrontBridge;
+    private VuforiaTrackable blueFrontBridge;
+    private VuforiaTrackable red1;
+    private VuforiaTrackable red2;
+    private VuforiaTrackable front1;
+    private VuforiaTrackable front2;
+    private VuforiaTrackable blue1;
+    private VuforiaTrackable blue2;
+    private VuforiaTrackable rear1;
+    private VuforiaTrackable rear2;
+
+    private List<VuforiaTrackable> allTrackables;
+
+    OpenGLMatrix robotFromCamera;
+
+    public VuforiaNav(HardwareMap hwMap) {
         /*
          * Configure Vuforia by creating a Parameter object, and passing it to the Vuforia engine.
          * We can pass Vuforia the handle to a camera preview resource (on the RC phone);
          * If no camera monitor is desired, use the parameter-less constructor instead (commented out below).
          */
         int cameraMonitorViewId = hardwareMap.appContext.getResources().getIdentifier("cameraMonitorViewId", "id", hwMap.appContext.getPackageName());
-        VuforiaLocalizer.Parameters parameters = new VuforiaLocalizer.Parameters(cameraMonitorViewId);
+        parameters = new VuforiaLocalizer.Parameters(cameraMonitorViewId);
 
         // VuforiaLocalizer.Parameters parameters = new VuforiaLocalizer.Parameters();
 
@@ -128,37 +150,37 @@ public class VuforiaNav {
 
         // Load the data sets for the trackable objects. These particular data
         // sets are stored in the 'assets' part of our application.
-        VuforiaTrackables targetsSkyStone = this.vuforia.loadTrackablesFromAsset("Skystone");
+        targetsSkyStone = this.vuforia.loadTrackablesFromAsset("Skystone");
 
-        VuforiaTrackable stoneTarget = targetsSkyStone.get(0);
+        stoneTarget = targetsSkyStone.get(0);
         stoneTarget.setName("Stone Target");
-        VuforiaTrackable blueRearBridge = targetsSkyStone.get(1);
+        blueRearBridge = targetsSkyStone.get(1);
         blueRearBridge.setName("Blue Rear Bridge");
-        VuforiaTrackable redRearBridge = targetsSkyStone.get(2);
+        redRearBridge = targetsSkyStone.get(2);
         redRearBridge.setName("Red Rear Bridge");
-        VuforiaTrackable redFrontBridge = targetsSkyStone.get(3);
+        redFrontBridge = targetsSkyStone.get(3);
         redFrontBridge.setName("Red Front Bridge");
-        VuforiaTrackable blueFrontBridge = targetsSkyStone.get(4);
+        blueFrontBridge = targetsSkyStone.get(4);
         blueFrontBridge.setName("Blue Front Bridge");
-        VuforiaTrackable red1 = targetsSkyStone.get(5);
+        red1 = targetsSkyStone.get(5);
         red1.setName("Red Perimeter 1");
-        VuforiaTrackable red2 = targetsSkyStone.get(6);
+        red2 = targetsSkyStone.get(6);
         red2.setName("Red Perimeter 2");
-        VuforiaTrackable front1 = targetsSkyStone.get(7);
+        front1 = targetsSkyStone.get(7);
         front1.setName("Front Perimeter 1");
-        VuforiaTrackable front2 = targetsSkyStone.get(8);
+        front2 = targetsSkyStone.get(8);
         front2.setName("Front Perimeter 2");
-        VuforiaTrackable blue1 = targetsSkyStone.get(9);
+        blue1 = targetsSkyStone.get(9);
         blue1.setName("Blue Perimeter 1");
-        VuforiaTrackable blue2 = targetsSkyStone.get(10);
+        blue2 = targetsSkyStone.get(10);
         blue2.setName("Blue Perimeter 2");
-        VuforiaTrackable rear1 = targetsSkyStone.get(11);
+        rear1 = targetsSkyStone.get(11);
         rear1.setName("Rear Perimeter 1");
-        VuforiaTrackable rear2 = targetsSkyStone.get(12);
+        rear2 = targetsSkyStone.get(12);
         rear2.setName("Rear Perimeter 2");
 
         // For convenience, gather together all the trackable objects in one easily-iterable collection */
-        List<VuforiaTrackable> allTrackables = new ArrayList<VuforiaTrackable>();
+        allTrackables = new ArrayList<VuforiaTrackable>();
         allTrackables.addAll(targetsSkyStone);
 
         /**
@@ -266,7 +288,7 @@ public class VuforiaNav {
         // In this example, it is centered (left to right), but forward of the middle of the robot, and above ground level.
 
 
-        OpenGLMatrix robotFromCamera = OpenGLMatrix
+        robotFromCamera = OpenGLMatrix
                 .translation(CAMERA_FORWARD_DISPLACEMENT, CAMERA_LEFT_DISPLACEMENT, CAMERA_VERTICAL_DISPLACEMENT)
                 .multiplied(Orientation.getRotationMatrix(EXTRINSIC, YZX, DEGREES, phoneYRotate, phoneZRotate, phoneXRotate));
 

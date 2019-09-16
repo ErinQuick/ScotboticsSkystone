@@ -66,12 +66,7 @@ public class ScotBot
     private ElapsedTime period  = new ElapsedTime();
 
     /* Constructor */
-    public ScotBot(){
-
-    }
-
-    /* Initialize standard Hardware interfaces */
-    public void init(HardwareMap ahwMap) {
+    public ScotBot(HardwareMap ahwMap) { // This used to be the init() function, change any code that uses it to instead use ScotBot robot = new ScotBot(hardwareMap);
         // Save reference to Hardware map
         hwMap = ahwMap;
 
