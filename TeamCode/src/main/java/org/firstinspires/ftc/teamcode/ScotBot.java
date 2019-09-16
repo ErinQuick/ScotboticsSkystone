@@ -50,8 +50,7 @@ import com.qualcomm.robotcore.util.ElapsedTime;
  * Servo channel:  Servo to open left claw:  "left_hand"
  * Servo channel:  Servo to open right claw: "right_hand"
  */
-public class ScotBot
-{
+public class ScotBot {
     /* Public OpMode members. */
     public DcMotor  leftFront   = null;
     public DcMotor  rightFront  = null;
@@ -115,8 +114,7 @@ public class ScotBot
         leftBack.setPower(blSpeed);
     }
 
-    public static double getAngle(double x, double y)
-    {
+    public static double getAngle(double x, double y) {
         return (1.5 * Math.PI - Math.atan2(y,x));
     }
  }
