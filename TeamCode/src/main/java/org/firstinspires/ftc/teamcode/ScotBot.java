@@ -105,8 +105,9 @@ public class ScotBot
 
     //x,y: direction to move from -1,-1 to 1,1
     //turn: direction to turn from -1 to 1
-    public void mecanumDrive(double x, double y, double turn) {
-        //TODO: make robot move
+    public void mecanumDrive(double x, double y, double turn)
+    {
+        if(x = )
     }
  }
 
