@@ -66,12 +66,7 @@ public class ScotBot
     private ElapsedTime period  = new ElapsedTime();
 
     /* Constructor */
-    public ScotBot(){
-
-    }
-
-    /* Initialize standard Hardware interfaces */
-    public void init(HardwareMap ahwMap) {
+    public ScotBot(HardwareMap ahwMap) { // This used to be the init() function, change any code that uses it to instead use ScotBot robot = new ScotBot(hardwareMap);
         // Save reference to Hardware map
         hwMap = ahwMap;
 
@@ -105,9 +100,23 @@ public class ScotBot
 
     //x,y: direction to move from -1,-1 to 1,1
     //turn: direction to turn from -1 to 1
-    public void mecanumDrive(double x, double y, double turn)
+    public void mecanumDrive(double x, double y, double turn) {
+        double angle = getAngle(x,y);
+        double speed = Math.sqrt(Math.pow(x, 2) + Math.pow(y ,2));
+
+        double flSpeed = speed*Math.sin(angle + Math.PI/4) + turn;
+        double brSpeed = speed*Math.sin(angle + Math.PI/4) - turn;
+        double frSpeed = speed*Math.cos(angle + Math.PI/4) - turn;
+        double blSpeed = speed*Math.cos(angle + Math.PI/4) + turn;
+
+        leftFront.setPower(flSpeed);
+        rightBack.setPower(brSpeed);
+        rightFront.setPower(frSpeed);
+        leftBack.setPower(blSpeed);
+    }
+
+    public static double getAngle(double x, double y)
     {
-        if(x = )
+        return (1.5 * Math.PI - Math.atan2(y,x));
     }
  }
-
