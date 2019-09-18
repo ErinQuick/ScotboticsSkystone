@@ -58,16 +58,20 @@ public class ScotBot {
     public DcMotor  leftBack = null;
     public Servo    phoneRotator = null;
 
-    public static final double MID_SERVO       =  0.5;
+    public static final double MIN_SERVO       =  0.0;
+    public static final double MAX_SERVO       =  1.0;
+    public static final double SERVO_DEGREES   =  360.0;
 
     /* local OpMode members. */
-    HardwareMap hwMap           =  null;
+    public HardwareMap hwMap           =  null;
+    public LinearOpMode opmode         =  null;
     private ElapsedTime period  = new ElapsedTime();
 
     /* Constructor */
-    public ScotBot(HardwareMap ahwMap) { // This used to be the init() function, change any code that uses it to instead use ScotBot robot = new ScotBot(hardwareMap);
+    public ScotBot(HardwareMap ahwMap, Telemetry telemetry, LinearOpMode mainopmode) { // This used to be the init() function, change any code that uses it to instead use ScotBot robot = new ScotBot(hardwareMap);
         // Save reference to Hardware map
         hwMap = ahwMap;
+        opmode = mainopmode;
 
         // Define and Initialize Motors
         leftFront  = hwMap.get(DcMotor.class, "lf");

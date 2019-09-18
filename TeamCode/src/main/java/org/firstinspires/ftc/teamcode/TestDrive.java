@@ -49,7 +49,7 @@ public class TestDrive extends LinearOpMode {
     @Override
     public void runOpMode() {
 
-        robot = new ScotBot(hardwareMap);
+        robot = new ScotBot(hardwareMap, telemetry, this);
 
         // Send telemetry message to signify robot waiting;
         telemetry.addData("Say", "Hello Driver");    //

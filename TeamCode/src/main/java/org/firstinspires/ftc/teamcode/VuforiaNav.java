@@ -33,6 +33,8 @@ import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
+import com.qualcomm.robotcore.util.ElapsedTime;
+
 import org.firstinspires.ftc.robotcore.external.ClassFactory;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.robotcore.external.matrices.OpenGLMatrix;
@@ -45,6 +47,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.VuforiaTrackables;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.lang.Math;
 
 import static org.firstinspires.ftc.robotcore.external.navigation.AngleUnit.DEGREES;
 import static org.firstinspires.ftc.robotcore.external.navigation.AxesOrder.XYZ;
@@ -104,6 +107,11 @@ public class VuforiaNav {
     private float phoneXRotate    = 0;
     private float phoneYRotate    = 0;
     private float phoneZRotate    = 0;
+
+    public static final double PHONE_ROTATE_DISTANCE = 0.25;
+    public static final double SERVO_WAIT_TIME = 0.1;
+    public ElapsedTime servoTimer;
+
 
     final float CAMERA_FORWARD_DISPLACEMENT  = 4.0f * mmPerInch;   // eg: Camera is 4 Inches in front of robot center
     final float CAMERA_VERTICAL_DISPLACEMENT = 8.0f * mmPerInch;   // eg: Camera is 8 Inches above ground
@@ -287,7 +295,6 @@ public class VuforiaNav {
         // Next, translate the camera lens to where it is on the robot.
         // In this example, it is centered (left to right), but forward of the middle of the robot, and above ground level.
 
-
         robotFromCamera = OpenGLMatrix
                 .translation(CAMERA_FORWARD_DISPLACEMENT, CAMERA_LEFT_DISPLACEMENT, CAMERA_VERTICAL_DISPLACEMENT)
                 .multiplied(Orientation.getRotationMatrix(EXTRINSIC, YZX, DEGREES, phoneYRotate, phoneZRotate, phoneXRotate));
@@ -312,7 +319,7 @@ public class VuforiaNav {
         targetsSkyStone.activate();
     }
 
-    public void check() {
+    public void check(ScotBot robot) {
         // check all the trackable targets to see which one (if any) is visible.
         targetVisible = false;
         for (VuforiaTrackable trackable : allTrackables) {
@@ -327,6 +334,35 @@ public class VuforiaNav {
                     lastLocation = robotLocationTransform;
                 }
                 break;
+            }else { //If you can't see a target, rotate the phone by a certain angle (PHONE_ROTATE_DISTANCE)
+                double rotatorPosition = robot.phoneRotator.getPosition() + PHONE_ROTATE_DISTANCE;
+
+                rotatorPosition = (rotatorPosition >= 0 ? rotatorPosition : 10000-Math.abs(rotatorPosition)) % 1; //Sorry this is confusing but basically if
+                // the position is positive it does %1 to make it less than 1
+                // and if it is negative it gets the absolute value and subtracts it from 10000 (see below) (so -0.25 becomes 0.75, and then does %1 in case it is somehow still above 1
+                // yell at Zorb (Charlie) (me) if you need help because I wrote it
+                // also it subtracts from 10000 because unless rotatorPosition is above 10000 the result will be positive and the %1 brings it back down below 1 so the result will be between 0 and 1
+
+                double rotateDegrees = (rotatorPosition * robot.SERVO_DEGREES) - (robot.SERVO_DEGREES / 2);  //Convert servo position to degrees
+
+                robotFromCamera = OpenGLMatrix
+                        .translation(CAMERA_FORWARD_DISPLACEMENT, CAMERA_LEFT_DISPLACEMENT, CAMERA_VERTICAL_DISPLACEMENT)
+                        .multiplied(Orientation.getRotationMatrix(EXTRINSIC, YZX, DEGREES, phoneYRotate + rotateDegrees, phoneZRotate, phoneXRotate));
+
+
+                servoTimer.reset(); //Start the timer
+                while (servoTimer.seconds() < SERVO_WAIT_TIME) {  //Wait for the servo to move
+                    robot.telemetry.addData("Waiting for servo");  //The robot has the telemetry in it
+                    robot.telemetry.update();
+                }
+
+                robot.phoneRotator.setPosition(rotatorPosition); //rotate the phone to the new position
+
+
+                robot.telemetry.addData("RECURSION(RECURSION(RECURSION(RECURSION)))");
+                robot.telemetry.update();
+                check(robot); //recuuuuursssioooooon (but hopefully not too much)
+                //If this program really breaks it's probably this
             }
         }
 
@@ -341,10 +377,10 @@ public class VuforiaNav {
             Orientation rotation = Orientation.getOrientation(lastLocation, EXTRINSIC, XYZ, DEGREES);
             telemetry.addData("Rot (deg)", "{Roll, Pitch, Heading} = %.0f, %.0f, %.0f", rotation.firstAngle, rotation.secondAngle, rotation.thirdAngle);
 
-            return new LocRot(translation, rotation);
+            return new LocRot(translation, rotation); // Return an object with the rotation and translation of the robot
         } else {
             telemetry.addData("Visible Target", "none");
-            return null;
+            return null; //This should never happen but if it sees nothing then don't return anything
         }
         telemetry.update();
     }
