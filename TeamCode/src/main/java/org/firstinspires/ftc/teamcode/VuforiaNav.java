@@ -319,50 +319,50 @@ public class VuforiaNav {
         targetsSkyStone.activate();
     }
 
+    public void rotateCamera(ScotBot robot, double distance) {
+        double rotatorPosition = robot.phoneRotator.getPosition() + distance;
+
+        rotatorPosition = (rotatorPosition >= 0 ? rotatorPosition : 10000 - Math.abs(rotatorPosition)) % 1; //Sorry this is confusing but basically if
+        // the position is positive it does %1 to make it less than 1
+        // and if it is negative it gets the absolute value and subtracts it from 10000 (see below) (so -0.25 becomes 0.75, and then does %1 in case it is somehow still above 1
+        // yell at Zorb (Charlie) (me) if you need help because I wrote it
+        // also it subtracts from 10000 because unless rotatorPosition is above 10000 the result will be positive and the %1 brings it back down below 1 so the result will be between 0 and 1
+
+        double rotateDegrees = (rotatorPosition * robot.SERVO_DEGREES) - (robot.SERVO_DEGREES / 2);  //Convert servo position to degrees
+
+        robotFromCamera = OpenGLMatrix
+                .translation(CAMERA_FORWARD_DISPLACEMENT, CAMERA_LEFT_DISPLACEMENT, CAMERA_VERTICAL_DISPLACEMENT)
+                .multiplied(Orientation.getRotationMatrix(EXTRINSIC, YZX, DEGREES, phoneYRotate + rotateDegrees, phoneZRotate, phoneXRotate));
+
+
+        servoTimer.reset(); //Start the timer
+        while (servoTimer.seconds() < SERVO_WAIT_TIME) {  //Wait for the servo to move
+            robot.telemetry.addData("Waiting for servo");  //The robot has the telemetry in it
+            robot.telemetry.update();
+        }
+
+        robot.phoneRotator.setPosition(rotatorPosition); //rotate the phone to the new position
+    }
+
     public void check(ScotBot robot) {
         // check all the trackable targets to see which one (if any) is visible.
         targetVisible = false;
-        for (VuforiaTrackable trackable : allTrackables) {
-            if (((VuforiaTrackableDefaultListener) trackable.getListener()).isVisible()) {
-                telemetry.addData("Visible Target", trackable.getName());
-                targetVisible = true;
+        while (!targetVisible) {
+            for (VuforiaTrackable trackable : allTrackables) {
+                if (((VuforiaTrackableDefaultListener) trackable.getListener()).isVisible()) {
+                    telemetry.addData("Visible Target", trackable.getName());
+                    targetVisible = true;
 
-                // getUpdatedRobotLocation() will return null if no new information is available since
-                // the last time that call was made, or if the trackable is not currently visible.
-                OpenGLMatrix robotLocationTransform = ((VuforiaTrackableDefaultListener) trackable.getListener()).getUpdatedRobotLocation();
-                if (robotLocationTransform != null) {
-                    lastLocation = robotLocationTransform;
+                    // getUpdatedRobotLocation() will return null if no new information is available since
+                    // the last time that call was made, or if the trackable is not currently visible.
+                    OpenGLMatrix robotLocationTransform = ((VuforiaTrackableDefaultListener) trackable.getListener()).getUpdatedRobotLocation();
+                    if (robotLocationTransform != null) {
+                        lastLocation = robotLocationTransform;
+                    }
+                    break;
+                } else { //If you can't see a target, rotate the phone by a certain angle (PHONE_ROTATE_DISTANCE)
+                    rotateCamera(robot, PHONE_ROTATE_DISTANCE);
                 }
-                break;
-            }else { //If you can't see a target, rotate the phone by a certain angle (PHONE_ROTATE_DISTANCE)
-                double rotatorPosition = robot.phoneRotator.getPosition() + PHONE_ROTATE_DISTANCE;
-
-                rotatorPosition = (rotatorPosition >= 0 ? rotatorPosition : 10000-Math.abs(rotatorPosition)) % 1; //Sorry this is confusing but basically if
-                // the position is positive it does %1 to make it less than 1
-                // and if it is negative it gets the absolute value and subtracts it from 10000 (see below) (so -0.25 becomes 0.75, and then does %1 in case it is somehow still above 1
-                // yell at Zorb (Charlie) (me) if you need help because I wrote it
-                // also it subtracts from 10000 because unless rotatorPosition is above 10000 the result will be positive and the %1 brings it back down below 1 so the result will be between 0 and 1
-
-                double rotateDegrees = (rotatorPosition * robot.SERVO_DEGREES) - (robot.SERVO_DEGREES / 2);  //Convert servo position to degrees
-
-                robotFromCamera = OpenGLMatrix
-                        .translation(CAMERA_FORWARD_DISPLACEMENT, CAMERA_LEFT_DISPLACEMENT, CAMERA_VERTICAL_DISPLACEMENT)
-                        .multiplied(Orientation.getRotationMatrix(EXTRINSIC, YZX, DEGREES, phoneYRotate + rotateDegrees, phoneZRotate, phoneXRotate));
-
-
-                servoTimer.reset(); //Start the timer
-                while (servoTimer.seconds() < SERVO_WAIT_TIME) {  //Wait for the servo to move
-                    robot.telemetry.addData("Waiting for servo");  //The robot has the telemetry in it
-                    robot.telemetry.update();
-                }
-
-                robot.phoneRotator.setPosition(rotatorPosition); //rotate the phone to the new position
-
-
-                robot.telemetry.addData("RECURSION(RECURSION(RECURSION(RECURSION)))");
-                robot.telemetry.update();
-                check(robot); //recuuuuursssioooooon (but hopefully not too much)
-                //If this program really breaks it's probably this
             }
         }
 
