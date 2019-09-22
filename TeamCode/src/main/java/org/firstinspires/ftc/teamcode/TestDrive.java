@@ -57,7 +57,7 @@ public class TestDrive extends LinearOpMode {
 
         // Wait for the game to start (driver presses PLAY)
         waitForStart();
-
+        telemetry.addData("Say", "ScotBot TestDrive Started!");
         // run until the end of the match (driver presses STOP)
         while (opModeIsActive()) {
 
