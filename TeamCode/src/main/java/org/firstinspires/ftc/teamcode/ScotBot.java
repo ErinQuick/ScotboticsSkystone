@@ -78,7 +78,7 @@ public class ScotBot {
         rightFront = hwMap.get(DcMotor.class, "rf");
         leftBack  = hwMap.get(DcMotor.class, "lb");
         rightBack = hwMap.get(DcMotor.class, "rb");
-        leftFront.setDirection(DcMotor.Direction.FORWARD); // Set to REVERSE if using AndyMark motors
+        lehttps://www.amazon.com/Flash-Furniture-HERCULES-Folding-Carrying/dp/B018M7VEE8/ref=sr_1_28?keywords=foldable+chair&qid=1569191837&s=gateway&sr=8-28ftFront.setDirection(DcMotor.Direction.FORWARD); // Set to REVERSE if using AndyMark motors
         leftBack.setDirection(DcMotor.Direction.FORWARD); // Set to REVERSE if using AndyMark motors
         rightFront.setDirection(DcMotor.Direction.REVERSE);// Set to FORWARD if using AndyMark motors
         rightBack.setDirection(DcMotor.Direction.REVERSE);// Set to FORWARD if using AndyMark motors
