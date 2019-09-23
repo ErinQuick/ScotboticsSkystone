@@ -52,11 +52,13 @@ public class TestDrive extends LinearOpMode {
         robot = new ScotBot(hardwareMap, telemetry, this);
 
         // Send telemetry message to signify robot waiting;
-        telemetry.addData("Say", "Hello Driver");    //
+        telemetry.addData("Say", "ScotBot Is Initialized!");    //
         telemetry.update();
 
         // Wait for the game to start (driver presses PLAY)
         waitForStart();
+        telemetry.addData("Say", "ScotBot TestDrive Started!");
+        telemetry.update();
 
         // run until the end of the match (driver presses STOP)
         while (opModeIsActive()) {
