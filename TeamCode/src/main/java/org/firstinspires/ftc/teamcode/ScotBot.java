@@ -58,9 +58,19 @@ public class ScotBot {
     public DcMotor  leftBack = null;
     public Servo    phoneRotator = null;
 
+    static final double     COUNTS_PER_MOTOR_REV    = 1440 ;    // eg: TETRIX Motor Encoder
+    static final double     DRIVE_GEAR_REDUCTION    = 2.0 ;     // This is < 1.0 if geared UP
+    static final double     WHEEL_DIAMETER_MM   = 70.0 ;     // For figuring circumference
+    public static final double     COUNTS_PER_MM         = (COUNTS_PER_MOTOR_REV * DRIVE_GEAR_REDUCTION) /
+            (WHEEL_DIAMETER_MM * 3.1415);
+
+    private ElapsedTime     encoderTimeoutTimer = new ElapsedTime();
+    public static final double ENCODER_TIMEOUT = 10.0;
+
     public static final double MIN_SERVO       =  0.0;
     public static final double MAX_SERVO       =  1.0;
     public static final double SERVO_DEGREES   =  360.0;
+
 
     /* local OpMode members. */
     public HardwareMap hwMap           =  null;
@@ -118,6 +128,73 @@ public class ScotBot {
         leftBack.setPower(blSpeed);
     }
 
+    //Drive to relative coordinates in millimeters
+    public void mecanumEncoderDrive(double x, double y, double turn, double speed, ScotBot robot) {
+        int flTarget;
+        int brTarget;
+        int frTarget;
+        int blTarget; // Target positions for wheels
+
+        double maxDistance = Math.max(x,y);
+
+        double normalizedX = x / maxDistance;
+        double normalizedY = y / maxDistance;
+
+        double angle = getAngle(normalizedX,normalizedY); // Angle to drive at
+        double distance = Math.sqrt(Math.pow(normalizedX, 2) + Math.pow(normalizedY ,2)); // distance from 0,0 to x,y
+
+        double flMultiplier = speed*(distance*Math.sin(angle + Math.PI/4) + turn);
+        double brMultiplier = speed*(distance*Math.sin(angle + Math.PI/4) - turn);
+        double frMultiplier = speed*(distance*Math.cos(angle + Math.PI/4) - turn);
+        double blMultiplier = speed*(distance*Math.cos(angle + Math.PI/4) + turn); //Distance for each wheel to turn
+
+        double totalDistance = Math.sqrt(Math.pow(x, 2) + Math.pow(y ,2));
+
+        if (robot.opmode.opModeIsActive()) {
+            flTarget = robot.leftFront.getCurrentPosition() + (int)(flMultiplier * COUNTS_PER_MM * totalDistance);
+            brTarget = robot.rightBack.getCurrentPosition() + (int)(brMultiplier * COUNTS_PER_MM * totalDistance);
+            frTarget = robot.rightFront.getCurrentPosition() + (int)(frMultiplier * COUNTS_PER_MM * totalDistance);
+            blTarget = robot.leftBack.getCurrentPosition() + (int)(blMultiplier * COUNTS_PER_MM * totalDistance);
+
+            robot.leftFront.setTargetPosition(flTarget);
+            robot.rightBack.setTargetPosition(brTarget);
+            robot.rightFront.setTargetPosition(frTarget);
+            robot.leftBack.setTargetPosition(blTarget);
+
+            encoderTimeoutTimer.reset();
+
+            robot.leftFront.setPower(flMultiplier);
+            robot.rightBack.setPower(brMultiplier);
+            robot.rightFront.setPower(frMultiplier);
+            robot.leftBack.setPower(blMultiplier);
+        }
+    }
+
+    public void rotateCamera(ScotBot robot, double distance) {
+        double rotatorPosition = robot.phoneRotator.getPosition() + distance;
+
+        rotatorPosition = (rotatorPosition >= 0 ? rotatorPosition : 10000 - Math.abs(rotatorPosition)) % 1; //Sorry this is confusing but basically if
+        // the position is positive it does %1 to make it less than 1
+        // and if it is negative it gets the absolute value and subtracts it from 10000 (see below) (so -0.25 becomes 0.75, and then does %1 in case it is somehow still above 1
+        // yell at Zorb (Charlie) (me) if you need help because I wrote it
+        // also it subtracts from 10000 because unless rotatorPosition is above 10000 the result will be positive and the %1 brings it back down below 1 so the result will be between 0 and 1
+
+        double rotateDegrees = (rotatorPosition * robot.SERVO_DEGREES) - (robot.SERVO_DEGREES / 2);  //Convert servo position to degrees
+
+        robotFromCamera = OpenGLMatrix
+                .translation(CAMERA_FORWARD_DISPLACEMENT, CAMERA_LEFT_DISPLACEMENT, CAMERA_VERTICAL_DISPLACEMENT)
+                .multiplied(Orientation.getRotationMatrix(EXTRINSIC, YZX, DEGREES, phoneYRotate + rotateDegrees, phoneZRotate, phoneXRotate));
+
+        servoTimer.reset(); //Start the timer
+        while (servoTimer.seconds() < SERVO_WAIT_TIME) {  //Wait for the servo to move
+            robot.telemetry.addData("Waiting for servo");  //The robot has the telemetry in it
+            robot.telemetry.update();
+        }
+
+        robot.phoneRotator.setPosition(rotatorPosition); //rotate the phone to the new position
+
+        return rotatorPosition;
+    }
     public static double getAngle(double x, double y) {
         return (1.5 * Math.PI - Math.atan2(y,x));
     }

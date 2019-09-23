@@ -319,29 +319,18 @@ public class VuforiaNav {
         targetsSkyStone.activate();
     }
 
-    public void rotateCamera(ScotBot robot, double distance) {
-        double rotatorPosition = robot.phoneRotator.getPosition() + distance;
+    /* MoveTo: Move to a location on the field
+     * (x,y): position on field
+     * mode:
+     * 0: move on x, then y
+     * 1: move on y, then x
+     * 2: move diagonally
+     * 3: turn, then move forward
+     */
+    public void moveTo(double x, double y, int mode, ScotBot robot) {
+        if (mode == 0) {
 
-        rotatorPosition = (rotatorPosition >= 0 ? rotatorPosition : 10000 - Math.abs(rotatorPosition)) % 1; //Sorry this is confusing but basically if
-        // the position is positive it does %1 to make it less than 1
-        // and if it is negative it gets the absolute value and subtracts it from 10000 (see below) (so -0.25 becomes 0.75, and then does %1 in case it is somehow still above 1
-        // yell at Zorb (Charlie) (me) if you need help because I wrote it
-        // also it subtracts from 10000 because unless rotatorPosition is above 10000 the result will be positive and the %1 brings it back down below 1 so the result will be between 0 and 1
-
-        double rotateDegrees = (rotatorPosition * robot.SERVO_DEGREES) - (robot.SERVO_DEGREES / 2);  //Convert servo position to degrees
-
-        robotFromCamera = OpenGLMatrix
-                .translation(CAMERA_FORWARD_DISPLACEMENT, CAMERA_LEFT_DISPLACEMENT, CAMERA_VERTICAL_DISPLACEMENT)
-                .multiplied(Orientation.getRotationMatrix(EXTRINSIC, YZX, DEGREES, phoneYRotate + rotateDegrees, phoneZRotate, phoneXRotate));
-
-
-        servoTimer.reset(); //Start the timer
-        while (servoTimer.seconds() < SERVO_WAIT_TIME) {  //Wait for the servo to move
-            robot.telemetry.addData("Waiting for servo");  //The robot has the telemetry in it
-            robot.telemetry.update();
         }
-
-        robot.phoneRotator.setPosition(rotatorPosition); //rotate the phone to the new position
     }
 
     public void check(ScotBot robot) {
@@ -361,7 +350,13 @@ public class VuforiaNav {
                     }
                     break;
                 } else { //If you can't see a target, rotate the phone by a certain angle (PHONE_ROTATE_DISTANCE)
-                    rotateCamera(robot, PHONE_ROTATE_DISTANCE);
+                    double finalRotation = robot.rotateCamera(robot, PHONE_ROTATE_DISTANCE);
+
+                    if (finalRotation == 0.0) {
+                        robot.telemetry.addLine("Could not find any posters with Vuforia!");
+                        robot.telemetry.update();
+                        break;
+                    }
                 }
             }
         }
