@@ -143,10 +143,10 @@ public class ScotBot {
         double angle = getAngle(normalizedX,normalizedY); // Angle to drive at
         double distance = Math.sqrt(Math.pow(normalizedX, 2) + Math.pow(normalizedY ,2)); // distance from 0,0 to x,y
 
-        double flMultiplier = speed*(distance*Math.sin(angle + Math.PI/4) + turn);
-        double brMultiplier = speed*(distance*Math.sin(angle + Math.PI/4) - turn);
-        double frMultiplier = speed*(distance*Math.cos(angle + Math.PI/4) - turn);
-        double blMultiplier = speed*(distance*Math.cos(angle + Math.PI/4) + turn); //Distance for each wheel to turn
+        double flMultiplier = (distance*Math.sin(angle + Math.PI/4) + turn);
+        double brMultiplier = (distance*Math.sin(angle + Math.PI/4) - turn);
+        double frMultiplier = (distance*Math.cos(angle + Math.PI/4) - turn);
+        double blMultiplier = (distance*Math.cos(angle + Math.PI/4) + turn); //Distance for each wheel to turn
 
         double totalDistance = Math.sqrt(Math.pow(x, 2) + Math.pow(y ,2));
 
@@ -163,10 +163,10 @@ public class ScotBot {
 
             encoderTimeoutTimer.reset();
 
-            robot.leftFront.setPower(flMultiplier);
-            robot.rightBack.setPower(brMultiplier);
-            robot.rightFront.setPower(frMultiplier);
-            robot.leftBack.setPower(blMultiplier);
+            robot.leftFront.setPower(speed * flMultiplier);
+            robot.rightBack.setPower(speed * brMultiplier);
+            robot.rightFront.setPower(speed * frMultiplier);
+            robot.leftBack.setPower(speed * blMultiplier);
         }
     }
 
