@@ -167,6 +167,33 @@ public class ScotBot {
             robot.rightBack.setPower(speed * brMultiplier);
             robot.rightFront.setPower(speed * frMultiplier);
             robot.leftBack.setPower(speed * blMultiplier);
+
+            while (robot.opmode.opModeIsActive() &&
+                    (encoderTimeoutTimer.seconds() < ENCODER_TIMEOUT) &&
+                    (robot.rightFront.isBusy() && robot.rightBack.isBusy() && robot.leftBack.isBusy() && robot.leftFront.isBusy())) {
+
+                // Display it for the driver.
+                robot.telemetry.addData("Target: ",  "Running to %7d,%7d,%7d,%7d", flTarget,  brTarget, frTarget, blTarget);
+                robot.telemetry.addData("Current: ",  "Running at %7d,%7d,%7d,%7d",
+                        robot.leftBack.getCurrentPosition(),
+                        robot.rightBack.getCurrentPosition(),
+                        robot.leftFront.getCurrentPosition(),
+                        robot.rightFront.getCurrentPosition());
+                robot.telemetry.addData("targetPos: ", "Going To: %7d, %7d, and turning %7d", x,y,turn);
+                robot.telemetry.update();
+            }
+
+            // Stop all motion;
+            robot.leftFront.setPower(0);
+            robot.rightFront.setPower(0);
+            robot.leftBack.setPower(0);
+            robot.rightBack.setPower(0);
+
+            // Turn off RUN_TO_POSITION
+            robot.leftFront.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+            robot.rightBack.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+            robot.leftBack.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+            robot.rightFront.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         }
     }
 

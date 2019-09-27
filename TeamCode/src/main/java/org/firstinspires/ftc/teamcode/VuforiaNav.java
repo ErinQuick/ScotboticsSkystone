@@ -110,6 +110,7 @@ public class VuforiaNav {
 
     public static final double PHONE_ROTATE_DISTANCE = 0.25;
     public static final double SERVO_WAIT_TIME = 0.1;
+    public static final double MECANUM_MOVE_TO_SPEED = 0.5;
     public ElapsedTime servoTimer;
 
 
@@ -320,7 +321,7 @@ public class VuforiaNav {
     }
 
     /* MoveTo: Move to a location on the field
-     * (x,y): position on field
+     * (x,y): position on field in mm
      * mode:
      * 0: move on x, then y
      * 1: move on y, then x
@@ -328,8 +329,42 @@ public class VuforiaNav {
      * 3: turn, then move forward
      */
     public void moveTo(double x, double y, int mode, ScotBot robot) {
-        if (mode == 0) {
 
+        LocRot currentPos = check(robot);  // find where the robot is on the field
+
+        double dx = x - currentPos.location.get(0);
+        double dy = y - currentPos.location.get(2);  // relative distance to target location
+
+        robot.telemetry.addData("dx: ", dx);
+        robot.telemetry.addData("dy: ", dy); //add position to telemetry for debug
+        robot.telemetry.update();
+
+        if (mode == 0) {
+            robot.mecanumEncoderDrive(dx,0,0,MECANUM_MOVE_TO_SPEED, robot);
+            robot.mecanumEncoderDrive(0,dy,0,MECANUM_MOVE_TO_SPEED, robot);
+        }else if (mode == 1) {
+            robot.mecanumEncoderDrive(0,dy,0,MECANUM_MOVE_TO_SPEED, robot);
+            robot.mecanumEncoderDrive(dx,0,0,MECANUM_MOVE_TO_SPEED, robot);
+        }else if (mode == 2) {
+            robot.mecanumEncoderDrive(dx,dy,0,MECANUM_MOVE_TO_SPEED, robot);
+        }else if (mode == 3) {
+            if (dy == 0.0) {
+                dy = 0.1;
+                robot.telemetry.addLine("Changing dy to prevent divide by 0");
+            }
+
+            double angleToTurn = Math.atan(dx/dy);
+
+            if (dy < 0) {
+                angleToTurn += Math.PI;
+            }
+
+            double fractionToTurn = angleToTurn / (Math.PI * 2);
+
+            double driveDistance = Math.sqrt((dx * dx) + (dy * dy));
+
+            robot.mecanumEncoderDrive(0,0,fractionToTurn,MECANUM_MOVE_TO_SPEED, robot); //encoderdrive might not turn right, but this should work
+            robot.mecanumEncoderDrive(0,driveDistance, 0, MECANUM_MOVE_TO_SPEED, robot);
         }
     }
 
