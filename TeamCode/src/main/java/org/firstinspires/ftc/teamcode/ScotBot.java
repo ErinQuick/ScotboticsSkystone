@@ -161,6 +161,12 @@ public class ScotBot {
             robot.rightFront.setTargetPosition(frTarget);
             robot.leftBack.setTargetPosition(blTarget);
 
+            // Turn On RUN_TO_POSITION
+            robot.leftFront.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+            robot.rightBack.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+            robot.leftBack.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+            robot.rightFront.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+
             encoderTimeoutTimer.reset();
 
             robot.leftFront.setPower(speed * flMultiplier);
