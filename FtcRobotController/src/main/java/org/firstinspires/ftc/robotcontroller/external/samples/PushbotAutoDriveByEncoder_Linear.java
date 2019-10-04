@@ -178,7 +178,7 @@ public class PushbotAutoDriveByEncoder_Linear extends LinearOpMode {
             robot.leftDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
             robot.rightDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
-            robot.opmode.sleep(200);   // optional pause after each move
+            sleep(200);   // optional pause after each move
         }
     }
 }

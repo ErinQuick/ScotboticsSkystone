@@ -44,7 +44,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.VuforiaLocalizer;
 import org.firstinspires.ftc.robotcore.external.navigation.VuforiaTrackable;
 import org.firstinspires.ftc.robotcore.external.navigation.VuforiaTrackableDefaultListener;
 import org.firstinspires.ftc.robotcore.external.navigation.VuforiaTrackables;
-
+import com.qualcomm.robotcore.hardware.HardwareMap;
 import java.util.ArrayList;
 import java.util.List;
 import java.lang.Math;
@@ -113,7 +113,6 @@ public class VuforiaNav {
     public static final double MECANUM_MOVE_TO_SPEED = 0.5;
     public ElapsedTime servoTimer;
 
-
     final float CAMERA_FORWARD_DISPLACEMENT  = 4.0f * mmPerInch;   // eg: Camera is 4 Inches in front of robot center
     final float CAMERA_VERTICAL_DISPLACEMENT = 8.0f * mmPerInch;   // eg: Camera is 8 Inches above ground
     final float CAMERA_LEFT_DISPLACEMENT     = 0;     // eg: Camera is ON the robot's center line
@@ -146,7 +145,7 @@ public class VuforiaNav {
          * We can pass Vuforia the handle to a camera preview resource (on the RC phone);
          * If no camera monitor is desired, use the parameter-less constructor instead (commented out below).
          */
-        int cameraMonitorViewId = hardwareMap.appContext.getResources().getIdentifier("cameraMonitorViewId", "id", hwMap.appContext.getPackageName());
+        int cameraMonitorViewId = hwMap.appContext.getResources().getIdentifier("cameraMonitorViewId", "id", hwMap.appContext.getPackageName());
         parameters = new VuforiaLocalizer.Parameters(cameraMonitorViewId);
 
         // VuforiaLocalizer.Parameters parameters = new VuforiaLocalizer.Parameters();
@@ -368,13 +367,13 @@ public class VuforiaNav {
         }
     }
 
-    public void check(ScotBot robot) {
+    public LocRot check(ScotBot robot) {
         // check all the trackable targets to see which one (if any) is visible.
         targetVisible = false;
         while (!targetVisible) {
             for (VuforiaTrackable trackable : allTrackables) {
                 if (((VuforiaTrackableDefaultListener) trackable.getListener()).isVisible()) {
-                    telemetry.addData("Visible Target", trackable.getName());
+                    robot.telemetry.addData("Visible Target", trackable.getName());
                     targetVisible = true;
 
                     // getUpdatedRobotLocation() will return null if no new information is available since
@@ -385,12 +384,18 @@ public class VuforiaNav {
                     }
                     break;
                 } else { //If you can't see a target, rotate the phone by a certain angle (PHONE_ROTATE_DISTANCE)
-                    double finalRotation = robot.rotateCamera(robot, PHONE_ROTATE_DISTANCE);
+                    if (ScotBot.HARDWARE_TEAM_ADDED_PHONE_SERVO) {
+                        double finalRotation = rotateCamera(robot, PHONE_ROTATE_DISTANCE);
 
-                    if (finalRotation == 0.0) {
-                        robot.telemetry.addLine("Could not find any posters with Vuforia!");
+                        if (finalRotation == 0.0) {
+                            robot.telemetry.addLine("Could not find any posters with Vuforia!");
+                            robot.telemetry.update();
+                            break;
+                        }
+                    }else {
+                        robot.telemetry.addLine("the phone can't rotate, turning robot");
                         robot.telemetry.update();
-                        break;
+                        robot.mecanumEncoderDrive(0,0,0.25,0.5, robot);
                     }
                 }
             }
@@ -400,19 +405,46 @@ public class VuforiaNav {
         if (targetVisible) {
             // express position (translation) of robot in inches.
             VectorF translation = lastLocation.getTranslation();
-            telemetry.addData("Pos (in)", "{X, Y, Z} = %.1f, %.1f, %.1f",
+            robot.telemetry.addData("Pos (in)", "{X, Y, Z} = %.1f, %.1f, %.1f",
                     translation.get(0) / mmPerInch, translation.get(1) / mmPerInch, translation.get(2) / mmPerInch);
 
             // express the rotation of the robot in degrees.
             Orientation rotation = Orientation.getOrientation(lastLocation, EXTRINSIC, XYZ, DEGREES);
-            telemetry.addData("Rot (deg)", "{Roll, Pitch, Heading} = %.0f, %.0f, %.0f", rotation.firstAngle, rotation.secondAngle, rotation.thirdAngle);
-
+            robot.telemetry.addData("Rot (deg)", "{Roll, Pitch, Heading} = %.0f, %.0f, %.0f", rotation.firstAngle, rotation.secondAngle, rotation.thirdAngle);
+            robot.telemetry.update();
             return new LocRot(translation, rotation); // Return an object with the rotation and translation of the robot
         } else {
-            telemetry.addData("Visible Target", "none");
+            robot.telemetry.addData("Visible Target", "none");
+            robot.telemetry.update();
             return null; //This should never happen but if it sees nothing then don't return anything
         }
-        telemetry.update();
+
+    }
+
+    public double rotateCamera(ScotBot robot, double distance) {
+        double rotatorPosition = robot.phoneRotator.getPosition() + distance;
+
+        rotatorPosition = (rotatorPosition >= 0 ? rotatorPosition : 10000 - Math.abs(rotatorPosition)) % 1; //Sorry this is confusing but basically if
+        // the position is positive it does %1 to make it less than 1
+        // and if it is negative it gets the absolute value and subtracts it from 10000 (see below) (so -0.25 becomes 0.75, and then does %1 in case it is somehow still above 1
+        // yell at Zorb (Charlie) (me) if you need help because I wrote it
+        // also it subtracts from 10000 because unless rotatorPosition is above 10000 the result will be positive and the %1 brings it back down below 1 so the result will be between 0 and 1
+
+        double rotateDegrees = (rotatorPosition * robot.SERVO_DEGREES) - (robot.SERVO_DEGREES / 2);  //Convert servo position to degrees
+
+        robotFromCamera = OpenGLMatrix
+                .translation(CAMERA_FORWARD_DISPLACEMENT, CAMERA_LEFT_DISPLACEMENT, CAMERA_VERTICAL_DISPLACEMENT)
+                .multiplied(Orientation.getRotationMatrix(EXTRINSIC, YZX, DEGREES, (float)(phoneYRotate + rotateDegrees), phoneZRotate, phoneXRotate));
+
+        servoTimer.reset(); //Start the timer
+        while (servoTimer.seconds() < SERVO_WAIT_TIME) {  //Wait for the servo to move
+            robot.telemetry.addLine("Waiting for servo");  //The robot has the telemetry in it
+            robot.telemetry.update();
+        }
+
+        robot.phoneRotator.setPosition(rotatorPosition); //rotate the phone to the new position
+
+        return rotatorPosition;
     }
 
     public void deactivate() {

@@ -66,9 +66,9 @@ public class TestDrive extends LinearOpMode {
             // Run wheels in POV mode (note: The joystick goes negative when pushed forwards, so negate it)
             // In this mode the Left stick moves the robot fwd and back, the Right stick turns left and right.
             // This way it's also easy to just drive straight, or just turn.
-            driveX = gamepad1.right_stick_x;
-            driveY = gamepad1.right_stick_y;
-            turn  =  gamepad1.left_stick_x;
+            double driveX = gamepad1.right_stick_x;
+            double driveY = gamepad1.right_stick_y;
+            double turn  =  gamepad1.left_stick_x;
 
             robot.mecanumDrive(driveX, driveY, turn);
 

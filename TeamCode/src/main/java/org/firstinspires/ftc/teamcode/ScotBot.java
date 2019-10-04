@@ -33,6 +33,8 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
+import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
+import org.firstinspires.ftc.robotcore.external.Telemetry;
 
 /**
  * This is NOT an opmode.
@@ -70,25 +72,28 @@ public class ScotBot {
     public static final double MIN_SERVO       =  0.0;
     public static final double MAX_SERVO       =  1.0;
     public static final double SERVO_DEGREES   =  360.0;
+    public static final double PHONE_SERVO_START = 0.5;
 
+    public static final boolean HARDWARE_TEAM_ADDED_PHONE_SERVO = false;
 
     /* local OpMode members. */
     public HardwareMap hwMap           =  null;
     public LinearOpMode opmode         =  null;
+    public Telemetry telemetry         =  null;
     private ElapsedTime period  = new ElapsedTime();
 
     /* Constructor */
     public ScotBot(HardwareMap ahwMap, Telemetry telemetry, LinearOpMode mainopmode) { // This used to be the init() function, change any code that uses it to instead use ScotBot robot = new ScotBot(hardwareMap);
         // Save reference to Hardware map
-        hwMap = ahwMap;
-        opmode = mainopmode;
-
+        this.hwMap = ahwMap;
+        this.opmode = mainopmode;
+        this.telemetry = telemetry;
         // Define and Initialize Motors
         leftFront  = hwMap.get(DcMotor.class, "lf");
         rightFront = hwMap.get(DcMotor.class, "rf");
         leftBack  = hwMap.get(DcMotor.class, "lb");
         rightBack = hwMap.get(DcMotor.class, "rb");
-        lehttps://www.amazon.com/Flash-Furniture-HERCULES-Folding-Carrying/dp/B018M7VEE8/ref=sr_1_28?keywords=foldable+chair&qid=1569191837&s=gateway&sr=8-28ftFront.setDirection(DcMotor.Direction.FORWARD); // Set to REVERSE if using AndyMark motors
+        //lehttps://www.amazon.com/Flash-Furniture-HERCULES-Folding-Carrying/dp/B018M7VEE8/ref=sr_1_28?keywords=foldable+chair&qid=1569191837&s=gateway&sr=8-28ftFront.setDirection(DcMotor.Direction.FORWARD); // Set to REVERSE if using AndyMark motors
         leftBack.setDirection(DcMotor.Direction.FORWARD); // Set to REVERSE if using AndyMark motors
         rightFront.setDirection(DcMotor.Direction.REVERSE);// Set to FORWARD if using AndyMark motors
         rightBack.setDirection(DcMotor.Direction.REVERSE);// Set to FORWARD if using AndyMark motors
@@ -107,8 +112,10 @@ public class ScotBot {
         rightBack.setMode(DcMotor.RunMode.RUN_USING_ENCODERS);
 
         // Define and initialize ALL installed servos.
-        //phoneRotator = hwMap.get(Servo.class, "phoneservo");
-        //phoneRotator.setPosition(MID_SERVO);
+        if (HARDWARE_TEAM_ADDED_PHONE_SERVO) {
+            phoneRotator = hwMap.get(Servo.class, "phoneservo");
+            phoneRotator.setPosition(PHONE_SERVO_START);
+        }
     }
 
     //x,y: direction to move from -1,-1 to 1,1
@@ -203,31 +210,7 @@ public class ScotBot {
         }
     }
 
-    public void rotateCamera(ScotBot robot, double distance) {
-        double rotatorPosition = robot.phoneRotator.getPosition() + distance;
 
-        rotatorPosition = (rotatorPosition >= 0 ? rotatorPosition : 10000 - Math.abs(rotatorPosition)) % 1; //Sorry this is confusing but basically if
-        // the position is positive it does %1 to make it less than 1
-        // and if it is negative it gets the absolute value and subtracts it from 10000 (see below) (so -0.25 becomes 0.75, and then does %1 in case it is somehow still above 1
-        // yell at Zorb (Charlie) (me) if you need help because I wrote it
-        // also it subtracts from 10000 because unless rotatorPosition is above 10000 the result will be positive and the %1 brings it back down below 1 so the result will be between 0 and 1
-
-        double rotateDegrees = (rotatorPosition * robot.SERVO_DEGREES) - (robot.SERVO_DEGREES / 2);  //Convert servo position to degrees
-
-        robotFromCamera = OpenGLMatrix
-                .translation(CAMERA_FORWARD_DISPLACEMENT, CAMERA_LEFT_DISPLACEMENT, CAMERA_VERTICAL_DISPLACEMENT)
-                .multiplied(Orientation.getRotationMatrix(EXTRINSIC, YZX, DEGREES, phoneYRotate + rotateDegrees, phoneZRotate, phoneXRotate));
-
-        servoTimer.reset(); //Start the timer
-        while (servoTimer.seconds() < SERVO_WAIT_TIME) {  //Wait for the servo to move
-            robot.telemetry.addData("Waiting for servo");  //The robot has the telemetry in it
-            robot.telemetry.update();
-        }
-
-        robot.phoneRotator.setPosition(rotatorPosition); //rotate the phone to the new position
-
-        return rotatorPosition;
-    }
     public static double getAngle(double x, double y) {
         return (1.5 * Math.PI - Math.atan2(y,x));
     }
