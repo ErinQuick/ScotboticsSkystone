@@ -30,6 +30,7 @@
 package org.firstinspires.ftc.teamcode;
 
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
@@ -54,33 +55,33 @@ import org.firstinspires.ftc.robotcore.external.Telemetry;
  */
 public class ScotBot {
     /* Public OpMode members. */
-    public DcMotor  leftFront   = null;
-    public DcMotor  rightFront  = null;
-    public DcMotor  rightBack = null;
-    public DcMotor  leftBack = null;
-    public Servo    phoneRotator = null;
+    public DcMotor leftFront = null;
+    public DcMotor rightFront = null;
+    public DcMotor rightBack = null;
+    public DcMotor leftBack = null;
+    public Servo phoneRotator = null;
 
-    static final double     COUNTS_PER_MOTOR_REV    = 1440 ;    // eg: TETRIX Motor Encoder
-    static final double     DRIVE_GEAR_REDUCTION    = 2.0 ;     // This is < 1.0 if geared UP
-    static final double     WHEEL_DIAMETER_MM   = 70.0 ;     // For figuring circumference
-    public static final double     COUNTS_PER_MM         = (COUNTS_PER_MOTOR_REV * DRIVE_GEAR_REDUCTION) /
+    static final double COUNTS_PER_MOTOR_REV = 1440;    // eg: TETRIX Motor Encoder
+    static final double DRIVE_GEAR_REDUCTION = 2.0;     // This is < 1.0 if geared UP
+    static final double WHEEL_DIAMETER_MM = 70.0;     // For figuring circumference
+    public static final double COUNTS_PER_MM = (COUNTS_PER_MOTOR_REV * DRIVE_GEAR_REDUCTION) /
             (WHEEL_DIAMETER_MM * 3.1415);
 
-    private ElapsedTime     encoderTimeoutTimer = new ElapsedTime();
+    private ElapsedTime encoderTimeoutTimer = new ElapsedTime();
     public static final double ENCODER_TIMEOUT = 10.0;
 
-    public static final double MIN_SERVO       =  0.0;
-    public static final double MAX_SERVO       =  1.0;
-    public static final double SERVO_DEGREES   =  360.0;
+    public static final double MIN_SERVO = 0.0;
+    public static final double MAX_SERVO = 1.0;
+    public static final double SERVO_DEGREES = 360.0;
     public static final double PHONE_SERVO_START = 0.5;
 
     public static final boolean HARDWARE_TEAM_ADDED_PHONE_SERVO = false;
 
     /* local OpMode members. */
-    public HardwareMap hwMap           =  null;
-    public LinearOpMode opmode         =  null;
-    public Telemetry telemetry         =  null;
-    private ElapsedTime period  = new ElapsedTime();
+    public HardwareMap hwMap = null;
+    public LinearOpMode opmode = null;
+    public Telemetry telemetry = null;
+    private ElapsedTime period = new ElapsedTime();
 
     /* Constructor */
     public ScotBot(HardwareMap ahwMap, Telemetry telemetry, LinearOpMode mainopmode) { // This used to be the init() function, change any code that uses it to instead use ScotBot robot = new ScotBot(hardwareMap);
@@ -89,14 +90,16 @@ public class ScotBot {
         this.opmode = mainopmode;
         this.telemetry = telemetry;
         // Define and Initialize Motors
-        leftFront  = hwMap.get(DcMotor.class, "lf");
+        leftFront = hwMap.get(DcMotor.class, "lf");
         rightFront = hwMap.get(DcMotor.class, "rf");
-        leftBack  = hwMap.get(DcMotor.class, "lb");
+        leftBack = hwMap.get(DcMotor.class, "lb");
         rightBack = hwMap.get(DcMotor.class, "rb");
         //lehttps://www.amazon.com/Flash-Furniture-HERCULES-Folding-Carrying/dp/B018M7VEE8/ref=sr_1_28?keywords=foldable+chair&qid=1569191837&s=gateway&sr=8-28ftFront.setDirection(DcMotor.Direction.FORWARD); // Set to REVERSE if using AndyMark motors
-        leftBack.setDirection(DcMotor.Direction.FORWARD); // Set to REVERSE if using AndyMark motors
-        rightFront.setDirection(DcMotor.Direction.REVERSE);// Set to FORWARD if using AndyMark motors
-        rightBack.setDirection(DcMotor.Direction.REVERSE);// Set to FORWARD if using AndyMark motors
+
+        leftFront.setDirection(DcMotor.Direction.REVERSE);
+        leftBack.setDirection(DcMotor.Direction.REVERSE); // Set to REVERSE if using AndyMark motors
+        rightFront.setDirection(DcMotor.Direction.FORWARD);// Set to FORWARD if using AndyMark motors
+        rightBack.setDirection(DcMotor.Direction.FORWARD);// Set to FORWARD if using AndyMark motors
 
         // Set all motors to zero power
         leftFront.setPower(0);
@@ -121,13 +124,13 @@ public class ScotBot {
     //x,y: direction to move from -1,-1 to 1,1
     //turn: direction to turn from -1 to 1
     public void mecanumDrive(double x, double y, double turn) {
-        double angle = getAngle(x,y);
-        double speed = Math.sqrt(Math.pow(x, 2) + Math.pow(y ,2));
+        double angle = getAngle(x, y);
+        double speed = Math.sqrt(Math.pow(x, 2) + Math.pow(y, 2));
 
-        double flSpeed = speed*Math.sin(angle + Math.PI/4) + turn;
-        double brSpeed = speed*Math.sin(angle + Math.PI/4) - turn;
-        double frSpeed = speed*Math.cos(angle + Math.PI/4) - turn;
-        double blSpeed = speed*Math.cos(angle + Math.PI/4) + turn;
+        double flSpeed = speed * Math.sin(angle + Math.PI / 4) + turn;
+        double brSpeed = speed * Math.sin(angle + Math.PI / 4) - turn;
+        double frSpeed = speed * Math.cos(angle + Math.PI / 4) - turn;
+        double blSpeed = speed * Math.cos(angle + Math.PI / 4) + turn;
 
         leftFront.setPower(flSpeed);
         rightBack.setPower(brSpeed);
@@ -142,26 +145,26 @@ public class ScotBot {
         int frTarget;
         int blTarget; // Target positions for wheels
 
-        double maxDistance = Math.max(x,y);
+        double maxDistance = Math.max(x, y);
 
         double normalizedX = x / maxDistance;
         double normalizedY = y / maxDistance;
 
-        double angle = getAngle(normalizedX,normalizedY); // Angle to drive at
-        double distance = Math.sqrt(Math.pow(normalizedX, 2) + Math.pow(normalizedY ,2)); // distance from 0,0 to x,y
+        double angle = getAngle(normalizedX, normalizedY); // Angle to drive at
+        double distance = Math.sqrt(Math.pow(normalizedX, 2) + Math.pow(normalizedY, 2)); // distance from 0,0 to x,y
 
-        double flMultiplier = (distance*Math.sin(angle + Math.PI/4) + turn);
-        double brMultiplier = (distance*Math.sin(angle + Math.PI/4) - turn);
-        double frMultiplier = (distance*Math.cos(angle + Math.PI/4) - turn);
-        double blMultiplier = (distance*Math.cos(angle + Math.PI/4) + turn); //Distance for each wheel to turn
+        double flMultiplier = (distance * Math.sin(angle + Math.PI / 4) + turn);
+        double brMultiplier = (distance * Math.sin(angle + Math.PI / 4) - turn);
+        double frMultiplier = (distance * Math.cos(angle + Math.PI / 4) - turn);
+        double blMultiplier = (distance * Math.cos(angle + Math.PI / 4) + turn); //Distance for each wheel to turn
 
-        double totalDistance = Math.sqrt(Math.pow(x, 2) + Math.pow(y ,2));
+        double totalDistance = Math.sqrt(Math.pow(x, 2) + Math.pow(y, 2));
 
         if (robot.opmode.opModeIsActive()) {
-            flTarget = robot.leftFront.getCurrentPosition() + (int)(flMultiplier * COUNTS_PER_MM * totalDistance);
-            brTarget = robot.rightBack.getCurrentPosition() + (int)(brMultiplier * COUNTS_PER_MM * totalDistance);
-            frTarget = robot.rightFront.getCurrentPosition() + (int)(frMultiplier * COUNTS_PER_MM * totalDistance);
-            blTarget = robot.leftBack.getCurrentPosition() + (int)(blMultiplier * COUNTS_PER_MM * totalDistance);
+            flTarget = robot.leftFront.getCurrentPosition() + (int) (flMultiplier * COUNTS_PER_MM * totalDistance);
+            brTarget = robot.rightBack.getCurrentPosition() + (int) (brMultiplier * COUNTS_PER_MM * totalDistance);
+            frTarget = robot.rightFront.getCurrentPosition() + (int) (frMultiplier * COUNTS_PER_MM * totalDistance);
+            blTarget = robot.leftBack.getCurrentPosition() + (int) (blMultiplier * COUNTS_PER_MM * totalDistance);
 
             robot.leftFront.setTargetPosition(flTarget);
             robot.rightBack.setTargetPosition(brTarget);
@@ -186,13 +189,13 @@ public class ScotBot {
                     (robot.rightFront.isBusy() && robot.rightBack.isBusy() && robot.leftBack.isBusy() && robot.leftFront.isBusy())) {
 
                 // Display it for the driver.
-                robot.telemetry.addData("Target: ",  "Running to %7d,%7d,%7d,%7d", flTarget,  brTarget, frTarget, blTarget);
-                robot.telemetry.addData("Current: ",  "Running at %7d,%7d,%7d,%7d",
+                robot.telemetry.addData("Target: ", "Running to %7d,%7d,%7d,%7d", flTarget, brTarget, frTarget, blTarget);
+                robot.telemetry.addData("Current: ", "Running at %7d,%7d,%7d,%7d",
                         robot.leftBack.getCurrentPosition(),
                         robot.rightBack.getCurrentPosition(),
                         robot.leftFront.getCurrentPosition(),
                         robot.rightFront.getCurrentPosition());
-                robot.telemetry.addData("targetPos: ", "Going To: %7d, %7d, and turning %7d", x,y,turn);
+                robot.telemetry.addData("targetPos: ", "Going To: %7d, %7d, and turning %7d", x, y, turn);
                 robot.telemetry.update();
             }
 
@@ -210,8 +213,7 @@ public class ScotBot {
         }
     }
 
-
     public static double getAngle(double x, double y) {
-        return (1.5 * Math.PI - Math.atan2(y,x));
+        return (1.5 * Math.PI - Math.atan2(y, x));
     }
- }
+}
