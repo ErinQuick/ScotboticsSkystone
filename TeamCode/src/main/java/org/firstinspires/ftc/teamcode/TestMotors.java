@@ -75,10 +75,11 @@ public class TestMotors extends LinearOpMode {
             } else {
                 robot.rightFront.setPower(0);
                 robot.rightBack.setPower(0);
-                robot.rightBack.setPower(0);
+                robot.leftFront.setPower(0);
                 robot.leftBack.setPower(0);
 
             }
+            telemetry.update();
         }
     }
 }
