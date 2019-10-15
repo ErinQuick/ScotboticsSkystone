@@ -116,11 +116,11 @@ public class ScotBot {
         rightBack.setPower(0);
 
         // Set all motors to run without encoders.
-        // May want to use RUN_USING_ENCODERS if encoders are installed.
-        leftFront.setMode(DcMotor.RunMode.RUN_USING_ENCODERS); //RUN_USING_ENCODERS is deprecated and your using it, therefore it is ok to use <center></center>
-        rightFront.setMode(DcMotor.RunMode.RUN_USING_ENCODERS);
-        leftBack.setMode(DcMotor.RunMode.RUN_USING_ENCODERS);
-        rightBack.setMode(DcMotor.RunMode.RUN_USING_ENCODERS);
+        // May want to use RUN_USING_ENCODER if encoders are installed.
+        leftFront.setMode(DcMotor.RunMode.RUN_USING_ENCODER); //RUN_USING_ENCODERS is deprecated and your using it, therefore it is ok to use <center></center>
+        rightFront.setMode(DcMotor.RunMode.RUN_USING_ENCODER); //I was only using it because I copied it from the example, thanks for letting me know so I could fix it
+        leftBack.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        rightBack.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
         // Define and initialize ALL installed servos.
         if (HARDWARE_TEAM_ADDED_PHONE_SERVO) {
