@@ -86,7 +86,7 @@ public class VuforiaNav {
      * and paste it in to your code on the next line, between the double quotes.
      */
     private static final String VUFORIA_KEY =
-            " -- YOUR NEW VUFORIA KEY GOES HERE  --- ";
+            "Abf3otT/////AAABmZc0xuh1okN3uBMTqzNfrScCdMYrgOhF6UrsGpoaEwsPIq2c6qgt8O/3Ze+JaYXvwnC6c2i2N7SeLY1b/yIHBJljblAQfM5M50PYE0ympxJk9kCwbrMIsm2TZeEQ1EhA1P6u/YFd791UWaUT3h1S+B43Yf0VKtHD/7OJjxABcC1snmeIcfeMYmjLCEHrup3/LjfA9DTh+biGhimx2Z3eyii9zF1yuRbAoBjYop58vC1dD77DxOakS2t8fc1IqkMHa1hTXKN/Bv3zqfGQ/+tzDE5WlSVb9JmmOYA+0KcfIxhhnK4FXl3eSkqK2MUw6AqMIBd0Fkchmi58Pn9bjNnS3MMqOEJbcX22QXOH3SN1mF39";
 
     // Since ImageTarget trackables use mm to specifiy their dimensions, we must use mm for all the physical dimension.
     // We will define some constants and conversions here
