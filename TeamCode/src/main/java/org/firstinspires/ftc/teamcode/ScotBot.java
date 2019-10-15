@@ -59,6 +59,8 @@ public class ScotBot {
     public DcMotor rightFront = null;
     public DcMotor rightBack = null;
     public DcMotor leftBack = null;
+    public DcMotor armVertical; //I am just initializing these variables here so it is useless to declare them as null.
+    public Servo armGripper;
     public Servo phoneRotator = null;
 
     static final double COUNTS_PER_MOTOR_REV = 1440;    // eg: TETRIX Motor Encoder
@@ -90,18 +92,24 @@ public class ScotBot {
         this.opmode = mainopmode;
         this.telemetry = telemetry;
         // Define and Initialize Motors
+        // -- Drive Motors --
         leftFront = hwMap.get(DcMotor.class, "lf");
         rightFront = hwMap.get(DcMotor.class, "rf");
         leftBack = hwMap.get(DcMotor.class, "lb");
         rightBack = hwMap.get(DcMotor.class, "rb");
-        //lehttps://www.amazon.com/Flash-Furniture-HERCULES-Folding-Carrying/dp/B018M7VEE8/ref=sr_1_28?keywords=foldable+chair&qid=1569191837&s=gateway&sr=8-28ftFront.setDirection(DcMotor.Direction.FORWARD); // Set to REVERSE if using AndyMark motors
-
+        // -- Arm Motors --
+        /* Disable these until hardware adds the Arm
+        armVertical = hwMap.get(DcMotor.class, "armRotaryMotor");
+        armVertical.setDirection(DcMotor.Direction.FORWARD); //Maybe change to reverse in future
+        armVertical.setPower(0);
+        armGripper = hwMap.get(Servo.class, "armServoMotor");
+         */
         leftFront.setDirection(DcMotor.Direction.REVERSE);
         leftBack.setDirection(DcMotor.Direction.REVERSE); // Set to REVERSE if using AndyMark motors
         rightFront.setDirection(DcMotor.Direction.FORWARD);// Set to FORWARD if using AndyMark motors
         rightBack.setDirection(DcMotor.Direction.FORWARD);// Set to FORWARD if using AndyMark motors
 
-        // Set all motors to zero power
+        // Set all motors to zero power, otherwise we will have McInnisBot not ScotBot and we will have to use a stun
         leftFront.setPower(0);
         rightFront.setPower(0);
         leftBack.setPower(0);
@@ -109,7 +117,7 @@ public class ScotBot {
 
         // Set all motors to run without encoders.
         // May want to use RUN_USING_ENCODERS if encoders are installed.
-        leftFront.setMode(DcMotor.RunMode.RUN_USING_ENCODERS);
+        leftFront.setMode(DcMotor.RunMode.RUN_USING_ENCODERS); //RUN_USING_ENCODERS is deprecated and your using it, therefore it is ok to use <center></center>
         rightFront.setMode(DcMotor.RunMode.RUN_USING_ENCODERS);
         leftBack.setMode(DcMotor.RunMode.RUN_USING_ENCODERS);
         rightBack.setMode(DcMotor.RunMode.RUN_USING_ENCODERS);
@@ -125,7 +133,7 @@ public class ScotBot {
     //turn: direction to turn from -1 to 1
     public void mecanumDrive(double x, double y, double turn) {
         double angle = getAngle(x, y);
-        double speed = Math.sqrt(Math.pow(x, 2) + Math.pow(y, 2));
+        double speed = Math.sqrt(Math.pow(x, 2) + Math.pow(y, 2)); //Would manipulating this variable make the robot drive faster?
 
         double flSpeed = speed * Math.sin(angle + Math.PI / 4) + turn;
         double brSpeed = speed * Math.sin(angle + Math.PI / 4) - turn;
