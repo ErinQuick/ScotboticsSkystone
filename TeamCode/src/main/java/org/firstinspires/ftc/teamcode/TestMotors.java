@@ -29,18 +29,16 @@
 
 package org.firstinspires.ftc.teamcode;
 
-import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
-import com.qualcomm.robotcore.util.Range;
 
 /**
  * 
  */
 
-@TeleOp(name="Test Drive (Wheels Only)", group="Scotbotics")
+@TeleOp(name="Test Motors", group="Scotbotics")
 
-public class TestDrive extends LinearOpMode {
+public class TestMotors extends LinearOpMode {
 
     /* Declare OpMode members. */
     ScotBot robot;   // Use a Scotbot's hardware
@@ -57,23 +55,31 @@ public class TestDrive extends LinearOpMode {
 
         // Wait for the game to start (driver presses PLAY)
         waitForStart();
-        telemetry.addData("Say", "ScotBot TestDrive Started!");
+        telemetry.addData("Say", "ScotBot TestMotors Started!");
         telemetry.update();
 
         // run until the end of the match (driver presses STOP)
         while (opModeIsActive()) {
+            if(gamepad1.dpad_up){
+                robot.rightFront.setPower(1);
+                telemetry.addData("Motor:", "Spinning Right Front");
+            } else if(gamepad1.dpad_down){
+                robot.rightBack.setPower(1);
+                telemetry.addData("Motor:", "Spinning Right Back");
+            } else if(gamepad1.dpad_left){
+                robot.leftFront.setPower(1);
+                telemetry.addData("Motor:", "Spinning Left Front");
+            } else if(gamepad1.dpad_right){
+                robot.leftBack.setPower(1);
+                telemetry.addData("Motor:", "Spinning Left Back");
+            } else {
+                robot.rightFront.setPower(0);
+                robot.rightBack.setPower(0);
+                robot.leftFront.setPower(0);
+                robot.leftBack.setPower(0);
 
-            // Run wheels in POV mode (note: The joystick goes negative when pushed forwards, so negate it)
-            // In this mode the Left stick moves the robot fwd and back, the Right stick turns left and right.
-            // This way it's also easy to just drive straight, or just turn.
-            double driveX = gamepad1.right_stick_x;
-            double driveY = gamepad1.right_stick_y;
-            double turn  =  gamepad1.left_stick_x;
-
-            robot.mecanumDrive(driveX, driveY, turn);
-
-            // Pace this loop so jaw action is reasonable speed.
-            sleep(50);
+            }
+            telemetry.update();
         }
     }
 }

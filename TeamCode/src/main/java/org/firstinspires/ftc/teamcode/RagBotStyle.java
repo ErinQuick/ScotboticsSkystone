@@ -29,19 +29,16 @@
 
 package org.firstinspires.ftc.teamcode;
 
-import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
-import com.qualcomm.robotcore.util.Range;
 
 /**
  * 
  */
 
-@TeleOp(name="Test Drive (Wheels Only)", group="Scotbotics")
+@TeleOp(name="RagBot Style Controls (Similar To A Drone)", group="Scotbotics")
 
-public class TestDrive extends LinearOpMode {
-
+public class RagBotStyle extends LinearOpMode {
     /* Declare OpMode members. */
     ScotBot robot;   // Use a Scotbot's hardware
 
@@ -69,9 +66,9 @@ public class TestDrive extends LinearOpMode {
             double driveX = gamepad1.right_stick_x;
             double driveY = gamepad1.right_stick_y;
             double turn  =  gamepad1.left_stick_x;
-
+            double arm = gamepad1.left_stick_y;
             robot.mecanumDrive(driveX, driveY, turn);
-
+            robot.armVertical.setPower(arm); //Will be used when arm is added
             // Pace this loop so jaw action is reasonable speed.
             sleep(50);
         }
