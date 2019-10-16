@@ -72,9 +72,9 @@ public class TestDrive extends LinearOpMode {
 
             robot.mecanumDrive(driveX, driveY, turn);
             if(gamepad1.dpad_up){
-                robot.baseplatePuller.setPosition(0);
-            } else if (gamepad1.dpad_down){
                 robot.baseplatePuller.setPosition(.5);
+            } else if (gamepad1.dpad_down){
+                robot.baseplatePuller.setPosition(1);
             }
             // Pace this loop so jaw action is reasonable speed.
             sleep(50);
