@@ -48,7 +48,7 @@ public class NavTest extends LinearOpMode {
     public void runOpMode() {
 
         robot = new ScotBot(hardwareMap, telemetry, this);
-        v = new VuforiaNav(hardwareMap);
+        v = new VuforiaNav(robot);
 
         // Send telemetry message to signify robot waiting;
         telemetry.addLine("Press start to move to (0,1329)");    //

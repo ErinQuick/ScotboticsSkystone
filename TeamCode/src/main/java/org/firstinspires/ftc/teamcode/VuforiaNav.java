@@ -147,13 +147,13 @@ public class VuforiaNav {
 
     OpenGLMatrix robotFromCamera;
 
-    public VuforiaNav(HardwareMap hwMap) {
+    public VuforiaNav(ScotBot robot) {
         /*
          * Configure Vuforia by creating a Parameter object, and passing it to the Vuforia engine.
          * We can pass Vuforia the handle to a camera preview resource (on the RC phone);
          * If no camera monitor is desired, use the parameter-less constructor instead (commented out below).
          */
-        int cameraMonitorViewId = hwMap.appContext.getResources().getIdentifier("cameraMonitorViewId", "id", hwMap.appContext.getPackageName());
+        int cameraMonitorViewId = robot.hwMap.appContext.getResources().getIdentifier("cameraMonitorViewId", "id", robot.hwMap.appContext.getPackageName());
         parameters = new VuforiaLocalizer.Parameters(cameraMonitorViewId);
 
         // VuforiaLocalizer.Parameters parameters = new VuforiaLocalizer.Parameters();
@@ -161,12 +161,19 @@ public class VuforiaNav {
         parameters.vuforiaLicenseKey = VUFORIA_KEY;
         parameters.cameraDirection = CAMERA_CHOICE;
 
+        robot.telemetry.addLine("Creating Vuforia");
+        robot.telemetry.update();
         //  Instantiate the Vuforia engine
         vuforia = ClassFactory.getInstance().createVuforia(parameters);
+        robot.telemetry.addLine("Loading Trackables");
+        robot.telemetry.update();
 
         // Load the data sets for the trackable objects. These particular data
         // sets are stored in the 'assets' part of our application.
         targetsSkyStone = this.vuforia.loadTrackablesFromAsset("Skystone");
+
+        robot.telemetry.addLine("About to set names!");
+        robot.telemetry.update();
 
         stoneTarget = targetsSkyStone.get(0);
         stoneTarget.setName("Stone Target");
@@ -216,6 +223,9 @@ public class VuforiaNav {
          * Before being transformed, each target image is conceptually located at the origin of the field's
          *  coordinate system (the center of the field), facing up.
          */
+
+        robot.telemetry.addLine("About to set positions!");
+        robot.telemetry.update();
 
         // Set the position of the Stone Target.  Since it's not fixed in position, assume it's at the field origin.
         // Rotated it to to face forward, and raised it to sit on the ground correctly.
@@ -325,15 +335,16 @@ public class VuforiaNav {
         // Tap the preview window to receive a fresh image.
 
         targetsSkyStone.activate();
-
-        initVuforia();
-
+        robot.telemetry.addLine("Initializing Vuforia!");
+        robot.telemetry.update();
         if (ClassFactory.getInstance().canCreateTFObjectDetector()) {
-            initTfod(hwMap);
+            initTfod(robot.hwMap);
+            robot.telemetry.addLine("Phone works with tensorflow");
         } else {
-            //robot.telemetry.addData("Sorry!", "This device is not compatible with TFOD");
-        }
+            robot.telemetry.addData("Sorry!", "This device is not compatible with TFOD");
 
+        }
+        robot.telemetry.update();
         /**
          * Activate TensorFlow Object Detection before we wait for the start command.
          * Do it here so that the Camera Stream window will have the TensorFlow annotations visible.
@@ -341,24 +352,8 @@ public class VuforiaNav {
         if (tfod != null) {
             tfod.activate();
         }
-    }
-
-    /**
-     * Initialize the Vuforia localization engine.
-     */
-    private void initVuforia() {
-        /*
-         * Configure Vuforia by creating a Parameter object, and passing it to the Vuforia engine.
-         */
-        VuforiaLocalizer.Parameters parameters = new VuforiaLocalizer.Parameters();
-
-        parameters.vuforiaLicenseKey = VUFORIA_KEY;
-        parameters.cameraDirection = CameraDirection.BACK;
-
-        //  Instantiate the Vuforia engine
-        vuforia = ClassFactory.getInstance().createVuforia(parameters);
-
-        // Loading trackables is not necessary for the TensorFlow Object Detection engine.
+        //robot.telemetry.addLine("Done!");
+        //robot.telemetry.update();
     }
 
     /**
@@ -374,6 +369,7 @@ public class VuforiaNav {
     }
 
     public List<Recognition> getLegos(ScotBot robot) {
+        robot.telemetry.addLine("Getting Legos");
         if (tfod != null) {
             // getUpdatedRecognitions() will return null if no new information is available since
             // the last time that call was made.
@@ -390,10 +386,16 @@ public class VuforiaNav {
                     robot.telemetry.addData(String.format("  right,bottom (%d)", i), "%.03f , %.03f",
                             recognition.getRight(), recognition.getBottom());
                 }
-                robot.telemetry.update();
+            }else {
+                robot.telemetry.addLine("No recognitions!");
             }
+            robot.telemetry.addData("Recognitions: ", updatedRecognitions);
+
             return updatedRecognitions;
+        }else {
+           // robot.telemetry.addLine("tfod is undefined");
         }
+        //robot.telemetry.update();
         return null;
     }
 

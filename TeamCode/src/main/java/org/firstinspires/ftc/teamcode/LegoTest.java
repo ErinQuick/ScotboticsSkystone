@@ -49,7 +49,7 @@ public class LegoTest extends LinearOpMode {
     public void runOpMode() {
 
         robot = new ScotBot(hardwareMap, telemetry, this);
-        v = new VuforiaNav(hardwareMap);
+        v = new VuforiaNav(robot);
 
         // Send telemetry message to signify robot waiting;
         telemetry.addLine("ScotBot is initialized");    //
