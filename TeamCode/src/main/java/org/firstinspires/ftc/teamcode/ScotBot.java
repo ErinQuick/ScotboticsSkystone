@@ -62,6 +62,7 @@ public class ScotBot {
     public DcMotor armVertical; //I am just initializing these variables here so it is useless to declare them as null.
     public Servo armGripper;
     public Servo phoneRotator = null;
+    public Servo baseplatePuller;
 
     static final double COUNTS_PER_MOTOR_REV = 1440;    // eg: TETRIX Motor Encoder
     static final double DRIVE_GEAR_REDUCTION = 2.0;     // This is < 1.0 if geared UP
@@ -97,6 +98,7 @@ public class ScotBot {
         rightFront = hwMap.get(DcMotor.class, "rf");
         leftBack = hwMap.get(DcMotor.class, "lb");
         rightBack = hwMap.get(DcMotor.class, "rb");
+        baseplatePuller = hwMap.get(Servo.class, "baseplatePullerServo");
         // -- Arm Motors --
         /* Disable these until hardware adds the Arm
         armVertical = hwMap.get(DcMotor.class, "armRotaryMotor");
