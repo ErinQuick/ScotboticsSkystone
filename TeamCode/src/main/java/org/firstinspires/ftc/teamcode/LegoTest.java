@@ -52,13 +52,13 @@ public class LegoTest extends LinearOpMode {
         v = new VuforiaNav(robot);
 
         // Send telemetry message to signify robot waiting;
-        telemetry.addLine("ScotBot is initialized");    //
-        telemetry.update();
+        //telemetry.addLine("ScotBot is initialized");    //
+        //telemetry.update();
 
         // Wait for the game to start (driver presses PLAY)
         waitForStart();
-        telemetry.addLine("ScotBot test started!");
-        telemetry.update();
+        //telemetry.addLine("ScotBot test started!");
+        //telemetry.update();
 
         // run until the end of the match (driver presses STOP)
         while (opModeIsActive()) {
