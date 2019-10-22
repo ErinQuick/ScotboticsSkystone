@@ -54,8 +54,6 @@ public class TestDrive extends LinearOpMode {
         // Send telemetry message to signify robot waiting;
         telemetry.addData("Say", "ScotBot Is Initialized!");    //
         telemetry.update();
-        //Keep the servo in the robot to save space
-        robot.baseplatePuller.setPosition(0);
         // Wait for the game to start (driver presses PLAY)
         waitForStart();
         // Robot has been started, now we can expand
