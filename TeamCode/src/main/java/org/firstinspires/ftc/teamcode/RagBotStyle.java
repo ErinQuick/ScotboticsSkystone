@@ -78,6 +78,11 @@ public class RagBotStyle extends LinearOpMode {
             double turn  =  currentGamepad.left_stick_x;
             double arm = currentGamepad.left_stick_y;
             robot.mecanumDrive(driveX, driveY, turn);
+            if(gamepad1.dpad_up){
+                robot.baseplatePuller.setPosition(.5);
+            } else if (gamepad1.dpad_down){
+                robot.baseplatePuller.setPosition(1);
+            }
             //robot.armVertical.setPower(arm); //Will be used when arm is added
             // Pace this loop so jaw action is reasonable speed.
             sleep(50);
