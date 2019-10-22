@@ -38,20 +38,10 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 
 /**
- * This is NOT an opmode.
- *
- * This class can be used to define all the specific hardware for a single robot.
- * In this case that robot is a Pushbot.
- * See PushbotTeleopTank_Iterative and others classes starting with "Pushbot" for usage examples.
- *
- * This hardware class assumes the following device names have been configured on the robot:
- * Note:  All names are lower case and some have single spaces between words.
- *
- * Motor channel:  Left  drive motor:        "left_drive"
- * Motor channel:  Right drive motor:        "right_drive"
- * Motor channel:  Manipulator drive motor:  "left_arm"
- * Servo channel:  Servo to open left claw:  "left_hand"
- * Servo channel:  Servo to open right claw: "right_hand"
+ * This is NOT an opmode. This is a class for the robot.
+ * All of the robot's hardware is defined and initialized here along with
+ * important constants and functions.
+ * important constants and functions.
  */
 public class ScotBot {
     /* Public OpMode members. */
@@ -64,11 +54,9 @@ public class ScotBot {
     public Servo phoneRotator = null;
     public Servo baseplatePuller;
 
-    static final double COUNTS_PER_MOTOR_REV = 1440;    // eg: TETRIX Motor Encoder
-    static final double DRIVE_GEAR_REDUCTION = 2.0;     // This is < 1.0 if geared UP
-    static final double WHEEL_DIAMETER_MM = 70.0;     // For figuring circumference
-    public static final double COUNTS_PER_MM = (COUNTS_PER_MOTOR_REV * DRIVE_GEAR_REDUCTION) /
-            (WHEEL_DIAMETER_MM * 3.1415);
+
+    public static final double COUNTS_PER_MM = 100.0; //calibrate this to actual motors, its too hard to calculate
+    public static final double MECANUM_SIDE_MULTIPLIER = 2.0;
 
     private ElapsedTime encoderTimeoutTimer = new ElapsedTime();
     public static final double ENCODER_TIMEOUT = 10.0;
@@ -155,6 +143,8 @@ public class ScotBot {
         int frTarget;
         int blTarget; // Target positions for wheels
 
+        x *= MECANUM_SIDE_MULTIPLIER;
+
         double maxDistance = Math.max(x, y);
 
         double normalizedX = x / maxDistance;
@@ -205,11 +195,12 @@ public class ScotBot {
                         robot.rightBack.getCurrentPosition(),
                         robot.leftFront.getCurrentPosition(),
                         robot.rightFront.getCurrentPosition());
-                robot.telemetry.addData("targetPos: ", "Going To: %7d, %7d, and turning %7d", x, y, turn);
+                robot.telemetry.addData("targetPos: ", "Going To: %7f, %7f, and turning %7f", x, y, turn);
                 robot.telemetry.update();
             }
 
             // Stop all motion;
+            robot.leftFront.setPower(0);
             robot.leftFront.setPower(0);
             robot.rightFront.setPower(0);
             robot.leftBack.setPower(0);

@@ -375,27 +375,27 @@ public class VuforiaNav {
             // the last time that call was made.
             List<Recognition> updatedRecognitions = tfod.getUpdatedRecognitions();
             if (updatedRecognitions != null) {
-                robot.telemetry.addData("# Object Detected", updatedRecognitions.size());
+                //robot.telemetry.addData("# Object Detected", updatedRecognitions.size());
 
                 // step through the list of recognitions and display boundary info.
                 int i = 0;
                 for (Recognition recognition : updatedRecognitions) {
-                    robot.telemetry.addData(String.format("label (%d)", i), recognition.getLabel());
-                    robot.telemetry.addData(String.format("  left,top (%d)", i), "%.03f , %.03f",
-                            recognition.getLeft(), recognition.getTop());
-                    robot.telemetry.addData(String.format("  right,bottom (%d)", i), "%.03f , %.03f",
-                            recognition.getRight(), recognition.getBottom());
+                    //robot.telemetry.addData(String.format("label (%d)", i), recognition.getLabel());
+                    //robot.telemetry.addData(String.format("  left,top (%d)", i), "%.03f , %.03f",
+                    //        recognition.getLeft(), recognition.getTop());
+                    //robot.telemetry.addData(String.format("  right,bottom (%d)", i), "%.03f , %.03f",
+                    //        recognition.getRight(), recognition.getBottom());
                 }
             }else {
-                robot.telemetry.addLine("No recognitions!");
+                //robot.telemetry.addLine("No recognitions!");
             }
-            robot.telemetry.addData("Recognitions: ", updatedRecognitions);
+            //robot.telemetry.addData("Recognitions: ", updatedRecognitions);
 
             return updatedRecognitions;
         }else {
            // robot.telemetry.addLine("tfod is undefined");
         }
-        //robot.telemetry.update();
+        robot.telemetry.update();
         return null;
     }
 

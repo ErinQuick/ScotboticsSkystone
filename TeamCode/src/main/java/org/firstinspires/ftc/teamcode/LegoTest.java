@@ -29,14 +29,19 @@
 
 package org.firstinspires.ftc.teamcode;
 
+import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+
+import org.firstinspires.ftc.robotcore.external.tfod.Recognition;
+
+import java.util.List;
 
 /**
  * 
  */
 
-@TeleOp(name="Legos tensorflow test", group="Scotbotics")
+@Autonomous(name="Legos tensorflow test", group="Scotbotics")
 
 public class LegoTest extends LinearOpMode {
 
@@ -63,10 +68,28 @@ public class LegoTest extends LinearOpMode {
         // run until the end of the match (driver presses STOP)
         while (opModeIsActive()) {
 
-            v.getLegos(robot);
+            List<Recognition> recognitions = v.getLegos(robot);
+
+            if (recognitions != null) {
+                telemetry.addData("# Object Detected", recognitions.size());
+
+                // step through the list of recognitions and display boundary info.
+                int i = 0;
+                for (Recognition recognition : recognitions) {
+                    telemetry.addData(String.format("label (%d)", i), recognition.getLabel());
+                    telemetry.addData(String.format("  left,top (%d)", i), "%.03f , %.03f",
+                            recognition.getLeft(), recognition.getTop());
+                    telemetry.addData(String.format("  right,bottom (%d)", i), "%.03f , %.03f",
+                            recognition.getRight(), recognition.getBottom());
+                }
+            }else {
+                telemetry.addLine("No recognitions!");
+            }
+
+            telemetry.update();
 
             // Pace this loop so jaw action is reasonable speed.
-            sleep(50);
+            sleep(500);
         }
     }
 }
