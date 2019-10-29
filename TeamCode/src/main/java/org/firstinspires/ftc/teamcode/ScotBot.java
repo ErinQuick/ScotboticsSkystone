@@ -54,7 +54,6 @@ public class ScotBot {
     public Servo phoneRotator = null;
     public Servo baseplatePuller;
 
-
     public static final double COUNTS_PER_MM = 1.0; //calibrate this to actual motors, its too hard to calculate
     public static final double MECANUM_SIDE_MULTIPLIER = 2.0;
 
@@ -94,10 +93,10 @@ public class ScotBot {
         armVertical.setPower(0);
         armGripper = hwMap.get(Servo.class, "armServoMotor");
          */
-        leftFront.setDirection(DcMotor.Direction.REVERSE);
-        leftBack.setDirection(DcMotor.Direction.REVERSE);
-        rightFront.setDirection(DcMotor.Direction.FORWARD);
-        rightBack.setDirection(DcMotor.Direction.FORWARD);
+        leftFront.setDirection(DcMotor.Direction.FORWARD);
+        leftBack.setDirection(DcMotor.Direction.FORWARD);
+        rightFront.setDirection(DcMotor.Direction.REVERSE);
+        rightBack.setDirection(DcMotor.Direction.REVERSE);
 
         // Set all motors to zero power, otherwise we will have McInnisBot not ScotBot and we will have to use a stun
         leftFront.setPower(0);
