@@ -55,7 +55,7 @@ public class ScotBot {
     public Servo baseplatePuller;
 
 
-    public static final double COUNTS_PER_MM = 100.0; //calibrate this to actual motors, its too hard to calculate
+    public static final double COUNTS_PER_MM = 1.0; //calibrate this to actual motors, its too hard to calculate
     public static final double MECANUM_SIDE_MULTIPLIER = 2.0;
 
     private ElapsedTime encoderTimeoutTimer = new ElapsedTime();
@@ -95,9 +95,9 @@ public class ScotBot {
         armGripper = hwMap.get(Servo.class, "armServoMotor");
          */
         leftFront.setDirection(DcMotor.Direction.REVERSE);
-        leftBack.setDirection(DcMotor.Direction.REVERSE); // Set to REVERSE if using AndyMark motors
-        rightFront.setDirection(DcMotor.Direction.FORWARD);// Set to FORWARD if using AndyMark motors
-        rightBack.setDirection(DcMotor.Direction.FORWARD);// Set to FORWARD if using AndyMark motors
+        leftBack.setDirection(DcMotor.Direction.REVERSE);
+        rightFront.setDirection(DcMotor.Direction.FORWARD);
+        rightBack.setDirection(DcMotor.Direction.FORWARD);
 
         // Set all motors to zero power, otherwise we will have McInnisBot not ScotBot and we will have to use a stun
         leftFront.setPower(0);
@@ -113,6 +113,7 @@ public class ScotBot {
         rightBack.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
         // Define and initialize ALL installed servos.
+        baseplatePuller.setPosition(0);
         if (HARDWARE_TEAM_ADDED_PHONE_SERVO) {
             phoneRotator = hwMap.get(Servo.class, "phoneservo");
             phoneRotator.setPosition(PHONE_SERVO_START);
@@ -153,10 +154,10 @@ public class ScotBot {
         double angle = getAngle(normalizedX, normalizedY); // Angle to drive at
         double distance = Math.sqrt(Math.pow(normalizedX, 2) + Math.pow(normalizedY, 2)); // distance from 0,0 to x,y
 
-        double flMultiplier = (distance * Math.sin(angle + Math.PI / 4) + turn);
-        double brMultiplier = (distance * Math.sin(angle + Math.PI / 4) - turn);
-        double frMultiplier = (distance * Math.cos(angle + Math.PI / 4) - turn);
-        double blMultiplier = (distance * Math.cos(angle + Math.PI / 4) + turn); //Distance for each wheel to turn
+        double flMultiplier = (distance * Math.cos(angle + Math.PI / 4) + turn);
+        double brMultiplier = (distance * Math.cos(angle + Math.PI / 4) - turn);
+        double frMultiplier = (distance * Math.sin(angle + Math.PI / 4) - turn);
+        double blMultiplier = (distance * Math.sin(angle + Math.PI / 4) + turn); //Distance for each wheel to turn
 
         double totalDistance = Math.sqrt(Math.pow(x, 2) + Math.pow(y, 2));
 
