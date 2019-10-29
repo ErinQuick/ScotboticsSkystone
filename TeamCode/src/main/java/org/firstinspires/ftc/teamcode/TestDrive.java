@@ -54,8 +54,6 @@ public class TestDrive extends LinearOpMode {
         // Send telemetry message to signify robot waiting;
         telemetry.addData("Say", "ScotBot Is Initialized!");    //
         telemetry.update();
-        //Keep the servo in the robot to save space
-        robot.baseplatePuller.setPosition(0);
         // Wait for the game to start (driver presses PLAY)
         waitForStart();
         // Robot has been started, now we can expand
@@ -74,11 +72,6 @@ public class TestDrive extends LinearOpMode {
             double turn  =  gamepad1.left_stick_x;
 
             robot.mecanumDrive(driveX, driveY, turn);
-            if(gamepad1.dpad_up){
-                robot.baseplatePuller.setPosition(.5);
-            } else if (gamepad1.dpad_down){
-                robot.baseplatePuller.setPosition(1);
-            }
             // Pace this loop so jaw action is reasonable speed.
             sleep(50);
         }

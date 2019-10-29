@@ -31,6 +31,8 @@ package org.firstinspires.ftc.teamcode;
 
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.robotcore.hardware.Gamepad;
+
 
 /**
  * 
@@ -41,7 +43,7 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 public class RagBotStyle extends LinearOpMode {
     /* Declare OpMode members. */
     ScotBot robot;   // Use a Scotbot's hardware
-
+    public Gamepad currentGamepad = gamepad1;
 
     @Override
     public void runOpMode() {
@@ -59,16 +61,29 @@ public class RagBotStyle extends LinearOpMode {
 
         // run until the end of the match (driver presses STOP)
         while (opModeIsActive()) {
-
+            if(currentGamepad.back){
+                if(currentGamepad == gamepad1){
+                    currentGamepad = gamepad2;
+                    telemetry.addData("Current Controller:", "Controller 2");
+                } else {
+                    currentGamepad = gamepad1;
+                    telemetry.addData("Current Controller:", "Controller 1");
+                }
+            }
             // Run wheels in POV mode (note: The joystick goes negative when pushed forwards, so negate it)
             // In this mode the Left stick moves the robot fwd and back, the Right stick turns left and right.
             // This way it's also easy to just drive straight, or just turn.
-            double driveX = gamepad1.right_stick_x;
-            double driveY = gamepad1.right_stick_y;
-            double turn  =  gamepad1.left_stick_x;
-            double arm = gamepad1.left_stick_y;
+            double driveX = currentGamepad.right_stick_x;
+            double driveY = currentGamepad.right_stick_y;
+            double turn  =  currentGamepad.left_stick_x;
+            double arm = currentGamepad.left_stick_y;
             robot.mecanumDrive(driveX, driveY, turn);
-            robot.armVertical.setPower(arm); //Will be used when arm is added
+            if(gamepad1.dpad_up){
+                robot.baseplatePuller.setPosition(.5);
+            } else if (gamepad1.dpad_down){
+                robot.baseplatePuller.setPosition(1);
+            }
+            //robot.armVertical.setPower(arm); //Will be used when arm is added
             // Pace this loop so jaw action is reasonable speed.
             sleep(50);
         }
