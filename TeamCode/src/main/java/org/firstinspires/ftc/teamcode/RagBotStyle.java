@@ -51,7 +51,8 @@ public class RagBotStyle extends LinearOpMode {
         robot = new ScotBot(hardwareMap, telemetry, this);
 
         // Send telemetry message to signify robot waiting;
-        telemetry.addData("Say", "ScotBot Is Initialized!");    //
+        telemetry.addData("Say", "ScotBot Is Initialized!"); 
+        telemetry.addData("Say:", currentGamepad);
         telemetry.update();
 
         // Wait for the game to start (driver presses PLAY)
