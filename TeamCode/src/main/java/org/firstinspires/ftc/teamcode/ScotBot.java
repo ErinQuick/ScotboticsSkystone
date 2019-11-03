@@ -40,7 +40,7 @@ import org.firstinspires.ftc.robotcore.external.Telemetry;
 /**
  * This is NOT an opmode. This is a class for the robot.
  * All of the robot's hardware is defined and initialized here along with
- * important constants and functions.
+ * important constants and functions.fru
  * important constants and functions.
  */
 public class ScotBot {
@@ -54,7 +54,7 @@ public class ScotBot {
     public Servo phoneRotator = null;
     public Servo baseplatePuller;
 
-    public static final double COUNTS_PER_MM = 1.0; //calibrate this to actual motors, its too hard to calculate
+    public static final double COUNTS_PER_MM = 6.518225; //calibrate this to actual motors, its too hard to calculate
     public static final double MECANUM_SIDE_MULTIPLIER = 2.0;
 
     private ElapsedTime encoderTimeoutTimer = new ElapsedTime();
@@ -161,10 +161,16 @@ public class ScotBot {
         double totalDistance = Math.sqrt(Math.pow(x, 2) + Math.pow(y, 2));
 
         if (robot.opmode.opModeIsActive()) {
-            flTarget = robot.leftFront.getCurrentPosition() + (int) (flMultiplier * COUNTS_PER_MM * totalDistance);
-            brTarget = robot.rightBack.getCurrentPosition() + (int) (brMultiplier * COUNTS_PER_MM * totalDistance);
-            frTarget = robot.rightFront.getCurrentPosition() + (int) (frMultiplier * COUNTS_PER_MM * totalDistance);
-            blTarget = robot.leftBack.getCurrentPosition() + (int) (blMultiplier * COUNTS_PER_MM * totalDistance);
+
+            robot.leftFront.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+            robot.rightBack.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+            robot.leftBack.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+            robot.rightFront.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+
+            flTarget = (robot.leftFront.getCurrentPosition() + (int) (flMultiplier * COUNTS_PER_MM * totalDistance)) * -1;
+            brTarget = (robot.rightBack.getCurrentPosition() + (int) (brMultiplier * COUNTS_PER_MM * totalDistance)) * -1;
+            frTarget = (robot.rightFront.getCurrentPosition() + (int) (frMultiplier * COUNTS_PER_MM * totalDistance)) * -1;
+            blTarget = (robot.leftBack.getCurrentPosition() + (int) (blMultiplier * COUNTS_PER_MM * totalDistance)) * -1;
 
             robot.leftFront.setTargetPosition(flTarget);
             robot.rightBack.setTargetPosition(brTarget);
@@ -172,9 +178,13 @@ public class ScotBot {
             robot.leftBack.setTargetPosition(blTarget);
 
             // Turn On RUN_TO_POSITION
+            //
             robot.leftFront.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+            //
             robot.rightBack.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+            //
             robot.leftBack.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+            //
             robot.rightFront.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
             encoderTimeoutTimer.reset();
@@ -191,16 +201,15 @@ public class ScotBot {
                 // Display it for the driver.
                 robot.telemetry.addData("Target: ", "Running to %7d,%7d,%7d,%7d", flTarget, brTarget, frTarget, blTarget);
                 robot.telemetry.addData("Current: ", "Running at %7d,%7d,%7d,%7d",
-                        robot.leftBack.getCurrentPosition(),
-                        robot.rightBack.getCurrentPosition(),
                         robot.leftFront.getCurrentPosition(),
-                        robot.rightFront.getCurrentPosition());
+                        robot.rightBack.getCurrentPosition(),
+                        robot.rightFront.getCurrentPosition(),
+                        robot.leftBack.getCurrentPosition());
                 robot.telemetry.addData("targetPos: ", "Going To: %7f, %7f, and turning %7f", x, y, turn);
                 robot.telemetry.update();
             }
 
             // Stop all motion;
-            robot.leftFront.setPower(0);
             robot.leftFront.setPower(0);
             robot.rightFront.setPower(0);
             robot.leftBack.setPower(0);
