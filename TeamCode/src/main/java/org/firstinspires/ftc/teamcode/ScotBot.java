@@ -55,7 +55,7 @@ public class ScotBot {
     public Servo baseplatePuller;
 
     public static final double COUNTS_PER_MM = 6.518225; //calibrate this to actual motors, its too hard to calculate
-    public static final double MECANUM_SIDE_MULTIPLIER = 2.0;
+    public static final double MECANUM_SIDE_MULTIPLIER = 1.33457894;
 
     private ElapsedTime encoderTimeoutTimer = new ElapsedTime();
     public static final double ENCODER_TIMEOUT = 10.0;

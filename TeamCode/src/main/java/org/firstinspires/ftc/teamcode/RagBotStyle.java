@@ -43,16 +43,16 @@ import com.qualcomm.robotcore.hardware.Gamepad;
 public class RagBotStyle extends LinearOpMode {
     /* Declare OpMode members. */
     ScotBot robot;   // Use a Scotbot's hardware
-    public Gamepad currentGamepad = gamepad1;
+    public Gamepad currentGamepad;
 
     @Override
     public void runOpMode() {
 
         robot = new ScotBot(hardwareMap, telemetry, this);
-
+        currentGamepad = gamepad1;
         // Send telemetry message to signify robot waiting;
         telemetry.addData("Say", "ScotBot Is Initialized!"); 
-        telemetry.addData("Say:", currentGamepad);
+        telemetry.addData("GamePad:", currentGamepad);
         telemetry.update();
 
         // Wait for the game to start (driver presses PLAY)
