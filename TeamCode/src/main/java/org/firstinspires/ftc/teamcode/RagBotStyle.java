@@ -29,9 +29,12 @@
 
 package org.firstinspires.ftc.teamcode;
 
+import com.qualcomm.ftccommon.SoundPlayer;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.Gamepad;
+
+import java.io.File;
 
 
 /**
@@ -44,6 +47,9 @@ public class RagBotStyle extends LinearOpMode {
     /* Declare OpMode members. */
     ScotBot robot;   // Use a Scotbot's hardware
     public Gamepad currentGamepad;
+    // Point to sound files on the phone's drive
+    private String soundPath = "sounds";
+    private File beepSound = new File(soundPath + "/beep.mp3");
 
     @Override
     public void runOpMode() {
@@ -63,6 +69,7 @@ public class RagBotStyle extends LinearOpMode {
         // run until the end of the match (driver presses STOP)
         while (opModeIsActive()) {
             if(currentGamepad.back){
+                SoundPlayer.getInstance().startPlaying(hardwareMap.appContext, beepSound);
                 if(currentGamepad == gamepad1){
                     currentGamepad = gamepad2;
                     telemetry.addData("Current Controller:", "Controller 2");
