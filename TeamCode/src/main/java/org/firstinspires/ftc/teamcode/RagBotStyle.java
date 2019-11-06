@@ -48,8 +48,8 @@ public class RagBotStyle extends LinearOpMode {
     ScotBot robot;   // Use a Scotbot's hardware
     public Gamepad currentGamepad;
     // Point to sound files on the phone's drive
-    private String soundPath = "sounds";
-    private File beepSound = new File(soundPath + "/beep.mp3");
+    private String soundPath = "/FIRST/sounds";
+    private File beepSound = new File("/sdcard" + soundPath + "/beep.mp3");
 
     @Override
     public void runOpMode() {
@@ -59,6 +59,7 @@ public class RagBotStyle extends LinearOpMode {
         // Send telemetry message to signify robot waiting;
         telemetry.addData("Say", "ScotBot Is Initialized!"); 
         telemetry.addData("GamePad:", currentGamepad);
+        telemetry.addData("Audio File Exists In Location:", beepSound.exists());
         telemetry.update();
 
         // Wait for the game to start (driver presses PLAY)
@@ -77,6 +78,7 @@ public class RagBotStyle extends LinearOpMode {
                     currentGamepad = gamepad1;
                     telemetry.addData("Current Controller:", "Controller 1");
                 }
+                telemetry.update();
             }
             // Run wheels in POV mode (note: The joystick goes negative when pushed forwards, so negate it)
             // In this mode the Left stick moves the robot fwd and back, the Right stick turns left and right.
