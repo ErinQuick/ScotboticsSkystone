@@ -29,9 +29,12 @@
 
 package org.firstinspires.ftc.teamcode;
 
+import com.qualcomm.ftccommon.SoundPlayer;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.Gamepad;
+
+import java.io.File;
 
 
 /**
@@ -43,16 +46,20 @@ import com.qualcomm.robotcore.hardware.Gamepad;
 public class RagBotStyle extends LinearOpMode {
     /* Declare OpMode members. */
     ScotBot robot;   // Use a Scotbot's hardware
-    public Gamepad currentGamepad = gamepad1;
+    public Gamepad currentGamepad;
+    // Point to sound files on the phone's drive
+    private String soundPath = "/FIRST/sounds";
+    private File beepSound = new File("/sdcard" + soundPath + "/beep.mp3");
 
     @Override
     public void runOpMode() {
 
         robot = new ScotBot(hardwareMap, telemetry, this);
-
+        currentGamepad = gamepad1;
         // Send telemetry message to signify robot waiting;
         telemetry.addData("Say", "ScotBot Is Initialized!"); 
-        telemetry.addData("Say:", currentGamepad);
+        telemetry.addData("GamePad:", currentGamepad);
+        telemetry.addData("Audio File Exists In Location:", beepSound.exists());
         telemetry.update();
 
         // Wait for the game to start (driver presses PLAY)
@@ -63,6 +70,7 @@ public class RagBotStyle extends LinearOpMode {
         // run until the end of the match (driver presses STOP)
         while (opModeIsActive()) {
             if(currentGamepad.back){
+                SoundPlayer.getInstance().startPlaying(hardwareMap.appContext, beepSound);
                 if(currentGamepad == gamepad1){
                     currentGamepad = gamepad2;
                     telemetry.addData("Current Controller:", "Controller 2");
@@ -70,6 +78,7 @@ public class RagBotStyle extends LinearOpMode {
                     currentGamepad = gamepad1;
                     telemetry.addData("Current Controller:", "Controller 1");
                 }
+                telemetry.update();
             }
             // Run wheels in POV mode (note: The joystick goes negative when pushed forwards, so negate it)
             // In this mode the Left stick moves the robot fwd and back, the Right stick turns left and right.
