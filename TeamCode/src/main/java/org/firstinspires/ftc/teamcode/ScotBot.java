@@ -124,6 +124,7 @@ public class ScotBot {
     public void mecanumDrive(double x, double y, double turn) {
         double angle = getAngle(x, y);
         double speed = Math.sqrt(Math.pow(x, 2) + Math.pow(y, 2)); //Would manipulating this variable make the robot drive faster?
+        speed *= Math.sqrt(2);
 
         double flSpeed = speed * Math.sin(angle + Math.PI / 4) + turn;
         double brSpeed = speed * Math.sin(angle + Math.PI / 4) - turn;

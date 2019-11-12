@@ -81,9 +81,9 @@ android {
             }
         }
         debug {
-            debuggable true
-            jniDebuggable true
-            renderscriptDebuggable true
+            debuggable false
+            jniDebuggable false
+            renderscriptDebuggable false
             ndk {
                 abiFilters "armeabi-v7a", "arm64-v8a"
             }
