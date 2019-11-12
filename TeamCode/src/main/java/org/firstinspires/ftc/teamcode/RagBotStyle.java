@@ -41,7 +41,7 @@ import java.io.File;
  * 
  */
 
-@TeleOp(name="RagBot Style Controls (Similar To A Drone)", group="Scotbotics")
+@TeleOp(name="RagBot Style Exponential Controls (Similar To A Drone)", group="Scotbotics")
 
 public class RagBotStyle extends LinearOpMode {
     /* Declare OpMode members. */
@@ -83,16 +83,18 @@ public class RagBotStyle extends LinearOpMode {
             // Run wheels in POV mode (note: The joystick goes negative when pushed forwards, so negate it)
             // In this mode the Left stick moves the robot fwd and back, the Right stick turns left and right.
             // This way it's also easy to just drive straight, or just turn.
-            double driveX = currentGamepad.right_stick_x;
-            double driveY = currentGamepad.right_stick_y;
-            double turn  =  currentGamepad.left_stick_x;
-            double arm = currentGamepad.left_stick_y;
+            double driveX = Math.pow(currentGamepad.right_stick_x, 3);
+            double driveY = Math.pow(currentGamepad.right_stick_y, 3);
+            double turn  =  Math.pow(currentGamepad.left_stick_x, 3);
+            double arm = Math.pow(currentGamepad.left_stick_y, 3);
             robot.mecanumDrive(driveX, driveY, turn);
             if(gamepad1.dpad_up){
                 robot.baseplatePuller.setPosition(.5);
             } else if (gamepad1.dpad_down){
                 robot.baseplatePuller.setPosition(1);
             }
+            telemetry.addData("RightBack Speed:", robot.rightBack.getPower());
+            telemetry.update();
             //robot.armVertical.setPower(arm); //Will be used when arm is added
             // Pace this loop so jaw action is reasonable speed.
             sleep(50);
