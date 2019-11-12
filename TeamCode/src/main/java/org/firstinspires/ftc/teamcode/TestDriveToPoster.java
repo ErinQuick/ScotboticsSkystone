@@ -31,15 +31,14 @@ package org.firstinspires.ftc.teamcode;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
-import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 /**
  * 
  */
 
-@Autonomous(name="Vufori Location", group="Scotbotics")
+@Autonomous(name="Drive to poster", group="Scotbotics")
 
-public class NavTest extends LinearOpMode {
+public class TestDriveToPoster extends LinearOpMode {
 
     /* Declare OpMode members. */
     ScotBot robot;   // Use a Scotbot's hardware
@@ -52,7 +51,7 @@ public class NavTest extends LinearOpMode {
         v = new VuforiaNav(robot);
 
         // Send telemetry message to signify robot waiting;
-        telemetry.addLine("Press start to display location");    //
+        telemetry.addLine("Press start to go in front of top top right poster with the droid (914.4, 1200)");    //
         telemetry.update();
 
         // Wait for the game to start (driver presses PLAY)
@@ -60,14 +59,6 @@ public class NavTest extends LinearOpMode {
         telemetry.addLine("Started");
         telemetry.update();
 
-        while (opModeIsActive()) {
-            LocRot currentPos = v.checkNoRotate(robot);
-            /*telemetry.addData("x:", currentPos.location.get(0));
-            telemetry.addData("y:", currentPos.location.get(1));
-            telemetry.addData("z:", currentPos.location.get(2));
-            telemetry.addData("x rotation: ", currentPos.rotation.firstAngle);
-            telemetry.addData("y rotation: ", currentPos.rotation.secondAngle);
-            telemetry.addData("z rotation: ", currentPos.rotation.thirdAngle);*/
-        }
+        v.moveTo(914.4,1200.0,0,robot);
     }
 }

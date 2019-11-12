@@ -449,6 +449,7 @@ public class VuforiaNav {
 
     public LocRot check(ScotBot robot) {
         // check all the trackable targets to see which one (if any) is visible.
+        ElapsedTime vuforiaTimer = new ElapsedTime();
         targetVisible = false;
         while (!targetVisible) {
             for (VuforiaTrackable trackable : allTrackables) {
@@ -464,18 +465,21 @@ public class VuforiaNav {
                     }
                     break;
                 } else { //If you can't see a target, rotate the phone by a certain angle (PHONE_ROTATE_DISTANCE)
-                    if (ScotBot.HARDWARE_TEAM_ADDED_PHONE_SERVO) {
-                        double finalRotation = rotateCamera(robot, PHONE_ROTATE_DISTANCE);
+                    if (vuforiaTimer.seconds() >= 3.0) {
+                        if (ScotBot.HARDWARE_TEAM_ADDED_PHONE_SERVO) {
+                            double finalRotation = rotateCamera(robot, PHONE_ROTATE_DISTANCE);
 
-                        if (finalRotation == 0.0) {
-                            robot.telemetry.addLine("Could not find any posters with Vuforia!");
+                            if (finalRotation == 0.0) {
+                                robot.telemetry.addLine("Could not find any posters with Vuforia!");
+                                robot.telemetry.update();
+                                break;
+                            }
+                        } else {
+                            robot.telemetry.addLine("the phone can't rotate, turning robot");
                             robot.telemetry.update();
-                            break;
+                            robot.mecanumEncoderDrive(0, 0, 0.25, 0.5, robot);
                         }
-                    }else {
-                        robot.telemetry.addLine("the phone can't rotate, turning robot");
-                        robot.telemetry.update();
-                        robot.mecanumEncoderDrive(0,0,0.25,0.5, robot);
+                        vuforiaTimer.reset();
                     }
                 }
             }
@@ -499,6 +503,44 @@ public class VuforiaNav {
             return null; //This should never happen but if it sees nothing then don't return anything
         }
 
+    }
+
+    public LocRot checkNoRotate(ScotBot robot) {
+        targetVisible = false;
+        while (!targetVisible) {
+            for (VuforiaTrackable trackable : allTrackables) {
+                if (((VuforiaTrackableDefaultListener) trackable.getListener()).isVisible()) {
+                    robot.telemetry.addData("Visible Target", trackable.getName());
+                    targetVisible = true;
+
+                    // getUpdatedRobotLocation() will return null if no new information is available since
+                    // the last time that call was made, or if the trackable is not currently visible.
+                    OpenGLMatrix robotLocationTransform = ((VuforiaTrackableDefaultListener) trackable.getListener()).getUpdatedRobotLocation();
+                    if (robotLocationTransform != null) {
+                        lastLocation = robotLocationTransform;
+                    }
+                    break;
+                }
+            }
+        }
+
+        // Provide feedback as to where the robot is located (if we know).
+        if (targetVisible) {
+            // express position (translation) of robot in inches.
+            VectorF translation = lastLocation.getTranslation();
+            robot.telemetry.addData("Pos (in)", "{X, Y, Z} = %.1f, %.1f, %.1f",
+                    translation.get(0) / mmPerInch, translation.get(1) / mmPerInch, translation.get(2) / mmPerInch);
+
+            // express the rotation of the robot in degrees.
+            Orientation rotation = Orientation.getOrientation(lastLocation, EXTRINSIC, XYZ, DEGREES);
+            robot.telemetry.addData("Rot (deg)", "{Roll, Pitch, Heading} = %.0f, %.0f, %.0f", rotation.firstAngle, rotation.secondAngle, rotation.thirdAngle);
+            robot.telemetry.update();
+            return new LocRot(translation, rotation); // Return an object with the rotation and translation of the robot
+        } else {
+            robot.telemetry.addData("Visible Target", "none");
+            robot.telemetry.update();
+            return null; //This should never happen but if it sees nothing then don't return anything
+        }
     }
 
     public double rotateCamera(ScotBot robot, double distance) {

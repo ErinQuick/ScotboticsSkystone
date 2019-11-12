@@ -40,7 +40,7 @@ import org.firstinspires.ftc.robotcore.external.Telemetry;
 /**
  * This is NOT an opmode. This is a class for the robot.
  * All of the robot's hardware is defined and initialized here along with
- * important constants and functions.fru
+ * important constants and functions.
  * important constants and functions.
  */
 public class ScotBot {
@@ -54,8 +54,8 @@ public class ScotBot {
     public Servo phoneRotator = null;
     public Servo baseplatePuller;
 
-    public static final double COUNTS_PER_MM = 6.518225; //calibrate this to actual motors, its too hard to calculate
-    public static final double MECANUM_SIDE_MULTIPLIER = 1.33457894;
+    public static final double COUNTS_PER_MM = 6.518225; // don't tell Mr. Savage this has too many significant figures
+    public static final double MECANUM_SIDE_MULTIPLIER = 2.0;
 
     private ElapsedTime encoderTimeoutTimer = new ElapsedTime();
     public static final double ENCODER_TIMEOUT = 10.0;
@@ -74,7 +74,7 @@ public class ScotBot {
     private ElapsedTime period = new ElapsedTime();
 
     /* Constructor */
-    public ScotBot(HardwareMap ahwMap, Telemetry telemetry, LinearOpMode mainopmode) { // This used to be the init() function, change any code that uses it to instead use ScotBot robot = new ScotBot(hardwareMap);
+    public ScotBot(HardwareMap ahwMap, Telemetry telemetry, LinearOpMode mainopmode) { // This used to be the init() function, change any code that uses it to instead use ScotBot robot = new ScotBot(hardwareMap, telemetry, opmode);
         // Save reference to Hardware map
         this.hwMap = ahwMap;
         this.opmode = mainopmode;
