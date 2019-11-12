@@ -50,6 +50,8 @@ public class RagBotStyle extends LinearOpMode {
     // Point to sound files on the phone's drive
     private String soundPath = "/FIRST/sounds";
     private File beepSound = new File("/sdcard" + soundPath + "/beep.mp3");
+    private File pipeSound = new File("/sdcard" + soundPath + "/pipes.mp3");
+    private boolean firstPress;
 
     @Override
     public void runOpMode() {
@@ -65,8 +67,11 @@ public class RagBotStyle extends LinearOpMode {
         // Wait for the game to start (driver presses PLAY)
         waitForStart();
         telemetry.addData("Say", "ScotBot TestDrive Started!");
+        telemetry.addLine("This is a two-controller op-mode, press back to transfer control to the other person.");
+        telemetry.addLine("The robot will beep when you transfer control.");
+        telemetry.addLine("Press Y for Bag-Pipes.");
         telemetry.update();
-
+        firstPress = true;
         // run until the end of the match (driver presses STOP)
         while (opModeIsActive()) {
             if(currentGamepad.back){
@@ -79,6 +84,9 @@ public class RagBotStyle extends LinearOpMode {
                     telemetry.addData("Current Controller:", "Controller 1");
                 }
                 telemetry.update();
+            } else if(currentGamepad.y && firstPress) {
+                SoundPlayer.getInstance().startPlaying(hardwareMap.appContext, pipeSound);
+                firstPress = false;
             }
             // Run wheels in POV mode (note: The joystick goes negative when pushed forwards, so negate it)
             // In this mode the Left stick moves the robot fwd and back, the Right stick turns left and right.
