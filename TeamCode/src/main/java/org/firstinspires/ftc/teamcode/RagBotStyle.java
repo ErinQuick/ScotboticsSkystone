@@ -41,7 +41,7 @@ import java.io.File;
  * 
  */
 
-@TeleOp(name="Ragbot Style (Default)", group="Scotbotics")
+@TeleOp(name="Drive Robot", group="Scotbotics")
 
 public class RagBotStyle extends LinearOpMode {
     /* Declare OpMode members. */
