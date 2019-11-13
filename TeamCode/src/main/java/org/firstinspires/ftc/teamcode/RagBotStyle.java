@@ -41,7 +41,7 @@ import java.io.File;
  * 
  */
 
-@TeleOp(name="RagBot Style Exponential Controls (Similar To A Drone)", group="Scotbotics")
+@TeleOp(name="Mecanum Joystick Drive", group="Scotbotics")
 
 public class RagBotStyle extends LinearOpMode {
     /* Declare OpMode members. */

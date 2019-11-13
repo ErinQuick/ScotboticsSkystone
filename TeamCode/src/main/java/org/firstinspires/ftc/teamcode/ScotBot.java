@@ -122,6 +122,7 @@ public class ScotBot {
     //x,y: direction to move from -1,-1 to 1,1
     //turn: direction to turn from -1 to 1
     public void mecanumDrive(double x, double y, double turn) {
+        x *= -1; //it is reversed for some reason
         double angle = getAngle(x, y);
         double speed = Math.sqrt(Math.pow(x, 2) + Math.pow(y, 2)); //Would manipulating this variable make the robot drive faster?
         speed *= Math.sqrt(2);
@@ -139,6 +140,7 @@ public class ScotBot {
 
     //Drive to relative coordinates in millimeters
     public void mecanumEncoderDrive(double x, double y, double turn, double speed, ScotBot robot) {
+
         int flTarget;
         int brTarget;
         int frTarget;
@@ -148,7 +150,7 @@ public class ScotBot {
 
         double maxDistance = Math.max(x, y);
 
-        double normalizedX = x / maxDistance;
+        double normalizedX = -x / maxDistance;
         double normalizedY = y / maxDistance;
 
         double angle = getAngle(normalizedX, normalizedY); // Angle to drive at
@@ -200,14 +202,14 @@ public class ScotBot {
                     (robot.rightFront.isBusy() && robot.rightBack.isBusy() && robot.leftBack.isBusy() && robot.leftFront.isBusy())) {
 
                 // Display it for the driver.
-                robot.telemetry.addData("Target: ", "Running to %7d,%7d,%7d,%7d", flTarget, brTarget, frTarget, blTarget);
-                robot.telemetry.addData("Current: ", "Running at %7d,%7d,%7d,%7d",
-                        robot.leftFront.getCurrentPosition(),
-                        robot.rightBack.getCurrentPosition(),
-                        robot.rightFront.getCurrentPosition(),
-                        robot.leftBack.getCurrentPosition());
-                robot.telemetry.addData("targetPos: ", "Going To: %7f, %7f, and turning %7f", x, y, turn);
-                robot.telemetry.update();
+         //       robot.telemetry.addData("Target: ", "Running to %7d,%7d,%7d,%7d", flTarget, brTarget, frTarget, blTarget);
+          //      robot.telemetry.addData("Current: ", "Running at %7d,%7d,%7d,%7d",
+           //             robot.leftFront.getCurrentPosition(),
+         //               robot.rightBack.getCurrentPosition(),
+          //              robot.rightFront.getCurrentPosition(),
+         //               robot.leftBack.getCurrentPosition());
+         //       robot.telemetry.addData("targetPos: ", "Going To: %7f, %7f, and turning %7f", x, y, turn);
+         //       robot.telemetry.update();
             }
 
             // Stop all motion;
