@@ -25,6 +25,8 @@
  * CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ *
+ * ScotBot - the hardware file for the Scotbotics robot
  */
 
 package org.firstinspires.ftc.teamcode;
@@ -202,14 +204,14 @@ public class ScotBot {
                     (robot.rightFront.isBusy() && robot.rightBack.isBusy() && robot.leftBack.isBusy() && robot.leftFront.isBusy())) {
 
                 // Display it for the driver.
-         //       robot.telemetry.addData("Target: ", "Running to %7d,%7d,%7d,%7d", flTarget, brTarget, frTarget, blTarget);
-          //      robot.telemetry.addData("Current: ", "Running at %7d,%7d,%7d,%7d",
-           //             robot.leftFront.getCurrentPosition(),
-         //               robot.rightBack.getCurrentPosition(),
-          //              robot.rightFront.getCurrentPosition(),
-         //               robot.leftBack.getCurrentPosition());
-         //       robot.telemetry.addData("targetPos: ", "Going To: %7f, %7f, and turning %7f", x, y, turn);
-         //       robot.telemetry.update();
+               // robot.telemetry.addData("Target: ", "Running to %7d,%7d,%7d,%7d", flTarget, brTarget, frTarget, blTarget);
+               // robot.telemetry.addData("Current: ", "Running at %7d,%7d,%7d,%7d",
+               //         robot.leftFront.getCurrentPosition(),
+               //         robot.rightBack.getCurrentPosition(),
+               //         robot.rightFront.getCurrentPosition(),
+               //         robot.leftBack.getCurrentPosition());
+               // robot.telemetry.addData("targetPos: ", "Going To: %7f, %7f, and turning %7f", x, y, turn);
+               // robot.telemetry.update();
             }
 
             // Stop all motion;
