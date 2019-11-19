@@ -41,7 +41,7 @@ import java.io.File;
  * 
  */
 
-@TeleOp(name="Drive", group="Scotbotics")
+@TeleOp(name="RagBot Style (Default)", group="Scotbotics")
 
 public class RagBotStyle extends LinearOpMode {
     /* Declare OpMode members. */
@@ -96,13 +96,16 @@ public class RagBotStyle extends LinearOpMode {
             double turn  =  Math.pow(currentGamepad.left_stick_x, 3);
             double arm = Math.pow(currentGamepad.left_stick_y, 3);
             robot.mecanumDrive(driveX, driveY, turn);
-            if(gamepad1.dpad_up){
+            if(currentGamepad.dpad_up){
                 robot.baseplatePuller.setPosition(.5);
-            } else if (gamepad1.dpad_down){
+            } else if (currentGamepad.dpad_down){
                 robot.baseplatePuller.setPosition(1);
             }
-            telemetry.addData("RightBack Speed:", robot.rightBack.getPower());
-            telemetry.update();
+            if(currentGamepad.right_bumper){
+                robot.armGripper.setPosition(0);
+            } else if(currentGamepad.left_bumper){
+                robot.armGripper.setPosition(0.5);
+            }
             //robot.armVertical.setPower(arm); //Will be used when arm is added
             // Pace this loop so jaw action is reasonable speed.
             sleep(50);

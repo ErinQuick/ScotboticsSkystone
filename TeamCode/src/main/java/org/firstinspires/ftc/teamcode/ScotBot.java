@@ -87,18 +87,17 @@ public class ScotBot {
         rightFront = hwMap.get(DcMotor.class, "rf");
         leftBack = hwMap.get(DcMotor.class, "lb");
         rightBack = hwMap.get(DcMotor.class, "rb");
-        baseplatePuller = hwMap.get(Servo.class, "baseplatePullerServo");
-        // -- Arm Motors --
-        /* Disable these until hardware adds the Arm
-        armVertical = hwMap.get(DcMotor.class, "armRotaryMotor");
-        armVertical.setDirection(DcMotor.Direction.FORWARD); //Maybe change to reverse in future
-        armVertical.setPower(0);
-        armGripper = hwMap.get(Servo.class, "armServoMotor");
-         */
         leftFront.setDirection(DcMotor.Direction.FORWARD);
         leftBack.setDirection(DcMotor.Direction.FORWARD);
         rightFront.setDirection(DcMotor.Direction.REVERSE);
         rightBack.setDirection(DcMotor.Direction.REVERSE);
+        // -- Arm Motors --
+        armVertical = hwMap.get(DcMotor.class, "armRotaryMotor");
+        armVertical.setDirection(DcMotor.Direction.FORWARD); //Maybe change to reverse in future
+        armVertical.setPower(0);
+        // -- Servos --
+        armGripper = hwMap.get(Servo.class, "armServoMotor");
+        baseplatePuller = hwMap.get(Servo.class, "baseplatePullerServo");
 
         // Set all motors to zero power, otherwise we will have McInnisBot not ScotBot and we will have to use a stun
         leftFront.setPower(0);
