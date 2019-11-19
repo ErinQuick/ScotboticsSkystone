@@ -125,8 +125,11 @@ public class ScotBot {
     public void mecanumDrive(double x, double y, double turn) {
         x *= -1; //it is reversed for some reason
         double angle = getAngle(x, y);
+
         double speed = Math.sqrt(Math.pow(x, 2) + Math.pow(y, 2)); //Would manipulating this variable make the robot drive faster?
-        speed *= Math.sqrt(2);
+        speed *= Math.sqrt(2);//The comment above sounds really stupid but it actually kind of works, this line speeds it up.
+        //If something tries to use this for a speed that is outside of the circle of the joystick, this will make the motor speeds
+        //above their maximum, but if it is only for driving this is OK.
 
         double flSpeed = speed * Math.sin(angle + Math.PI / 4) + turn;
         double brSpeed = speed * Math.sin(angle + Math.PI / 4) - turn;
@@ -137,15 +140,16 @@ public class ScotBot {
         rightBack.setPower(brSpeed);
         rightFront.setPower(frSpeed);
         leftBack.setPower(blSpeed);
+
     }
 
     //Drive to relative coordinates in millimeters
     public void mecanumEncoderDrive(double x, double y, double turn, double speed, ScotBot robot) {
 
-        int flTarget;
-        int brTarget;
-        int frTarget;
-        int blTarget; // Target positions for wheels
+       int flTarget;
+       int brTarget;
+       int frTarget;
+       int blTarget; // Target positions for wheels
 
         x *= MECANUM_SIDE_MULTIPLIER;
 
@@ -163,6 +167,9 @@ public class ScotBot {
         double blMultiplier = (distance * Math.sin(angle + Math.PI / 4) + turn); //Distance for each wheel to turn
 
         double totalDistance = Math.sqrt(Math.pow(x, 2) + Math.pow(y, 2));
+        robot.telemetry.addData("Angle: ", angle);
+        robot.telemetry.addData("Total Distance: ", totalDistance);
+        robot.telemetry.update();
 
         if (robot.opmode.opModeIsActive()) {
 
@@ -219,11 +226,13 @@ public class ScotBot {
             robot.leftBack.setPower(0);
             robot.rightBack.setPower(0);
 
+            
             // Turn off RUN_TO_POSITION
             robot.leftFront.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
             robot.rightBack.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
             robot.leftBack.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
             robot.rightFront.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+
         }
     }
 
