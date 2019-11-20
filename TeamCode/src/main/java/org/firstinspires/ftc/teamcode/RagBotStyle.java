@@ -103,9 +103,9 @@ public class RagBotStyle extends LinearOpMode {
                 robot.baseplatePuller.setPosition(1);
             }
             if(currentGamepad.right_bumper){
-                robot.armGripper.setPosition(1);
+                robot.armGripper.setPosition(0.5);
             } else if(currentGamepad.left_bumper){
-                robot.armGripper.setPosition(.5);
+                robot.armGripper.setPosition(1);
             }
             //robot.armVertical.setPower(arm); //Will be used when arm is added
             // Pace this loop so jaw action is reasonable speed.
