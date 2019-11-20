@@ -154,7 +154,7 @@ public class ScotBot {
 
         x *= MECANUM_SIDE_MULTIPLIER;
 
-        double maxDistance = Math.max(x, y);
+        double maxDistance = Math.max(Math.abs(x), Math.abs(y));
 
         double normalizedX = -x / maxDistance;
         double normalizedY = y / maxDistance;

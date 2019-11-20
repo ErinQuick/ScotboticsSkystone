@@ -57,6 +57,6 @@ public class TestDriveToSide extends LinearOpMode {
         telemetry.addLine("Started");
         telemetry.update();
 
-        robot.mecanumEncoderDrive(-100.0, 0.0, 0.0, 0.0, robot);
+        robot.mecanumEncoderDrive(-100.0, 0.0, 0.0, 0.5, robot);
     }
 }
