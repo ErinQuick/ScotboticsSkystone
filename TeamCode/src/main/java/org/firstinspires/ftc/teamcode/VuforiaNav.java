@@ -399,17 +399,66 @@ public class VuforiaNav {
         return null;
     }
 
+    enum MoveMode {
+       X_THEN_Y, Y_THEN_X, DIAGONAL, TURN_THEN_DRIVE;
+    }
+    enum VuforiaBackup {
+       NOTHING, TURN_ROBOT, TURN_PHONE, ENCODER_DRIVE;
+    }
+
     /* MoveTo: Move to a location on the field
      * (x,y): position on field in mm
-     * @param mode:
-     * 0: move on x, then y
-     * 1: move on y, then x
-     * 2: move diagonally
-     * 3: turn, then move forward
+     * MoveMode: how to move to location
+     * VuforiaBackup: what to do if vuforia can't find a nav target
+     * backup x/y: backup movement position if VuforiaBackup is set to ENCODER_DRIVE
      */
-    public void moveTo(double x, double y, int mode, ScotBot robot) {
+    public void moveTo(double x, double y, MoveMode moveMode, VuforiaBackup vuforiaBackup, double backupX, double backupY, ScotBot robot) {
 
-        LocRot currentPos = check(robot);  // find where the robot is on the field
+        LocRot currentPos = check(robot, vuforiaBackup);  // find where the robot is on the field
+
+        if (currentPos == null) {
+           if (vuforiaBackup == ENCODER_DRIVE) {
+              robot.telemetry.addLine("Using encoders as backup");
+              switch(moveMode) {
+                 case NOTHING:
+                  //do nothing
+                  break;
+                 case X_THEN_Y: 
+                  robot.mecanumEncoderDrive(backupX,0,0,MECANUM_MOVE_TO_SPEED, robot);
+                  robot.mecanumEncoderDrive(0,backupY,0,MECANUM_MOVE_TO_SPEED, robot);
+                  break;
+                 case Y_THEN_X:
+                  robot.mecanumEncoderDrive(0,backupY,0,MECANUM_MOVE_TO_SPEED, robot);
+                  robot.mecanumEncoderDrive(backupX,0,0,MECANUM_MOVE_TO_SPEED, robot);
+                  break;
+                 case DIAGONAL:
+                  robot.mecanumEncoderDrive(backupX,backupY,0,MECANUM_MOVE_TO_SPEED, robot);
+                  break;
+                 case TURN_THEN_DRIVE:
+                  if (backupY == 0.0) {
+                      backupY = 0.1;
+                      robot.telemetry.addLine("Changing backupY to prevent divide by 0");
+                  }
+
+                  double angleToTurn = Math.atan(backupX/backupY);
+
+                  if (backupY < 0) {
+                      angleToTurn += Math.PI;
+                  }
+
+                  double fractionToTurn = angleToTurn / (Math.PI * 2);
+
+                  double driveDistance = Math.sqrt((backupX * backupX) + (backupY * backupY));
+
+                  robot.mecanumEncoderDrive(0,0,fractionToTurn,MECANUM_MOVE_TO_SPEED, robot); //encoderdrive might not turn right, but this should work
+                  robot.mecanumEncoderDrive(0,driveDistance, 0, MECANUM_MOVE_TO_SPEED, robot);
+                  break;
+              }
+              return;
+           }else {
+              return;
+           }
+        }
 
         double dx = x - currentPos.location.get(0);
         double dy = y - currentPos.location.get(2);  // relative distance to target location
@@ -418,15 +467,22 @@ public class VuforiaNav {
         robot.telemetry.addData("dy: ", dy); //add position to telemetry for debug
         robot.telemetry.update();
 
-        if (mode == 0) {
+        switch(moveMode) {
+           case NOTHING:
+            //do nothing
+            break;
+           case X_THEN_Y: 
             robot.mecanumEncoderDrive(dx,0,0,MECANUM_MOVE_TO_SPEED, robot);
             robot.mecanumEncoderDrive(0,dy,0,MECANUM_MOVE_TO_SPEED, robot);
-        }else if (mode == 1) {
+            break;
+           case Y_THEN_X:
             robot.mecanumEncoderDrive(0,dy,0,MECANUM_MOVE_TO_SPEED, robot);
             robot.mecanumEncoderDrive(dx,0,0,MECANUM_MOVE_TO_SPEED, robot);
-        }else if (mode == 2) {
+            break;
+           case DIAGONAL:
             robot.mecanumEncoderDrive(dx,dy,0,MECANUM_MOVE_TO_SPEED, robot);
-        }else if (mode == 3) {
+            break;
+           case TURN_THEN_DRIVE:
             if (dy == 0.0) {
                 dy = 0.1;
                 robot.telemetry.addLine("Changing dy to prevent divide by 0");
@@ -444,10 +500,20 @@ public class VuforiaNav {
 
             robot.mecanumEncoderDrive(0,0,fractionToTurn,MECANUM_MOVE_TO_SPEED, robot); //encoderdrive might not turn right, but this should work
             robot.mecanumEncoderDrive(0,driveDistance, 0, MECANUM_MOVE_TO_SPEED, robot);
+            break;
         }
     }
+    
 
-    public LocRot check(ScotBot robot) {
+    public void moveTo(double x, double y, MoveMode moveMode, VuforiaBackup vuforiaBackup, ScotBot robot) {
+       moveTo(x,y,moveMode,vuforiaBackup,0.0,0.0,robot);
+    }
+
+    public void moveTo(double x, double y, MoveMode moveMode, ScotBot robot) {
+       moveTo(x,y,moveMode,VuforiaBackup.TURN_ROBOT,0.0,0.0,robot);
+    }
+
+    public LocRot check(ScotBot robot, VuforiaBackup vuforiaBackup) {
         // check all the trackable targets to see which one (if any) is visible.
         ElapsedTime vuforiaTimer = new ElapsedTime();
         targetVisible = false;
@@ -466,19 +532,24 @@ public class VuforiaNav {
                     break;
                 } else { //If you can't see a target, rotate the phone by a certain angle (PHONE_ROTATE_DISTANCE)
                     if (vuforiaTimer.seconds() >= 3.0) {
-                        if (ScotBot.HARDWARE_TEAM_ADDED_PHONE_SERVO) {
+                       switch (vuforiaBackup) {
+                          case TURN_PHONE:
                             double finalRotation = rotateCamera(robot, PHONE_ROTATE_DISTANCE);
 
                             if (finalRotation == 0.0) {
                                 robot.telemetry.addLine("Could not find any posters with Vuforia!");
                                 robot.telemetry.update();
-                                break;
                             }
-                        } else {
+                            break;
+                          case TURN_ROBOT:
                             robot.telemetry.addLine("the phone can't rotate, turning robot");
                             robot.telemetry.update();
                             robot.mecanumEncoderDrive(0, 0, 0.25, 0.5, robot);
+                            break;
+                          default:
+                            return null; //If we want to stop trying, continue where this was called
                         }
+                       }
                         vuforiaTimer.reset();
                     }
                 }
