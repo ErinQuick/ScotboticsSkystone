@@ -263,4 +263,70 @@ public class ScotBot {
        robot.mecanumEncoderDrive(685.8 * m, 0.0, 0.0, AUTO_SPEED, robot); //move back to poster visible
        v.moveTo(250.0, 1828.8, MoveMode.X_THEN_Y,VuforiaBackup.ENCODER_DRIVE, -650.0 * m, 622.3, robot); //move back under bridge
     }
+
+    public void deliverSkystones(boolean isRedSide, ScotBot robot, VuforiaNav v) {
+       double m = isRedSide ? -1.0 : 1.0;
+       robot.mecanumEncoderDrive(0.0, 762.0, 0.0, AUTO_SPEED, robot); //drive in front of skystones
+       robot.goToSkystone(robot, v); //drive in front of one skystone
+       robot.mecanumEncoderDrive(0.0, 304.0, 0.0, AUTO_SPEED, robot); //drive forwards into the skystone
+       //TODO: lower arm and close
+       robot.mecanumEncoderDrive(0.0, -950.0, 0.0, AUTO_SPEED, robot); //drive back
+       robot.IMUTurn(-90.0 * m);
+       robot.mecanumEncoderDrive(0.0, 2757.0, 0.0, AUTO_SPEED, robot); //drive to foundation
+       //TODO: release skystone
+       robot.mecanumEncoderDrive(680.0 * m, 0.0, 0.0, AUTO_SPEED, robot); //go to where poster is visible
+       v.moveTo(-914.4 * m, -950.0, MoveMode.X_THEN_Y, VuforiaBackup.ENCODER_DRIVE, 0.0, -2750.0, robot); //move back to legos
+       robot.IMUTurn(90.0 * m);
+       robot.goToSkystone(robot, v);
+       robot.mecanumEncoderDrive(0.0, 304.0, 0.0, AUTO_SPEED, robot); //drive forwards into the skystone
+       //TODO: lower arm and close
+       robot.mecanumEncoderDrive(0.0, -950.0, 0.0, AUTO_SPEED, robot); //drive back
+       robot.IMUTurn(-90.0 * m);
+       robot.mecanumEncoderDrive(0.0, 2757.0, 0.0, AUTO_SPEED, robot); //drive to foundation
+       //TODO: release skystone
+       robot.mecanumEncoderDrive(680.0 * m, 0.0, 0.0, AUTO_SPEED, robot); //go to where poster is visible
+       v.moveTo(-900.6 * m, 1828.8, MoveMode.X_THEN_Y, VuforiaBackup.ENCODER_DRIVE, 0.0, -850.9, robot); //move back under bridge
+    }
+
+    public void IMUTurn(double angle) {
+       //TODO: turn based on IMU
+    }
+
+    public void goToSkystone(ScotBot robot, VuforiaNav v) {
+       List<Recognition> legos = v.getLegos(robot);
+       ElapsedTime legoTimer = new ElapsedTime(); //stop if it is running too long
+       ElapsedTime visibleTimer = new ElapsedTime(); //change direction if nothing visible for a while
+       double legoOffset;
+       boolean inFrontOfLego = false;
+       double speed = 0.3;
+       visibleTimer.reset();
+       legoTimer.reset();
+       while (!inFrontOfLego) {
+          for (Recognition lego : legos) {
+             if (lego.label.equals("Skystone")) {
+                robot.telemetry.addLine("Found Skystone");
+                double oldOffset = legoOffset;
+                legoOffset = (lego.getLeft() - lego.getRight()); 
+                if (oldOffset != null && legoOffset != null) {
+                   if ((oldOffset - legoOffset) > 0) {
+                      speed = Math.min((oldOffset - legoOffset) / 100.0, 0.5);
+                   }else {
+                      speed = Math.max((oldOffset - legoOffset) / 100.0, -0.5); // set speed to go to lego
+                      //but not faster than 0.5, change the 100.0 to change how much it slows down
+                   }
+                }
+                visibleTimer.reset();
+                break;
+             }
+          }
+          if (legoTimer.seconds() > 5.0) {
+             break; //stop after timer
+          }
+          if (visibleTimer.seconds() > 2.0) {
+             speed = speed > 0 ? -0.3 : 0.3; //switch direction if not visible
+          }
+          robot.mecanumDrive(speed,0.0,0.0);
+       }
+       robot.mecanumDrive(0.0,0.0,0.0);
+    }
 }

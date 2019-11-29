@@ -60,6 +60,7 @@ public class LegoTest extends LinearOpMode {
         //telemetry.addLine("ScotBot is initialized");    //
         //telemetry.update();
 
+        telemetry.addLine("Press start to drive to a Skystone");
         // Wait for the game to start (driver presses PLAY)
         waitForStart();
         //telemetry.addLine("ScotBot test started!");
@@ -68,28 +69,29 @@ public class LegoTest extends LinearOpMode {
         // run until the end of the match (driver presses STOP)
         while (opModeIsActive()) {
 
-            List<Recognition> recognitions = v.getLegos(robot);
+           v.goToSkystone(robot, v);
+//             List<Recognition> recognitions = v.getLegos(robot);
 
-            if (recognitions != null) {
-                telemetry.addData("# Object Detected", recognitions.size());
+//             if (recognitions != null) {
+//                 telemetry.addData("# Object Detected", recognitions.size());
 
-                // step through the list of recognitions and display boundary info.
-                int i = 0;
-                for (Recognition recognition : recognitions) {
-                    telemetry.addData(String.format("label (%d)", i), recognition.getLabel());
-                    telemetry.addData(String.format("  left,top (%d)", i), "%.03f , %.03f",
-                            recognition.getLeft(), recognition.getTop());
-                    telemetry.addData(String.format("  right,bottom (%d)", i), "%.03f , %.03f",
-                            recognition.getRight(), recognition.getBottom());
-                }
-            }else {
-                telemetry.addLine("No recognitions!");
-            }
+//                 // step through the list of recognitions and display boundary info.
+//                 int i = 0;
+//                 for (Recognition recognition : recognitions) {
+//                     telemetry.addData(String.format("label (%d)", i), recognition.getLabel());
+//                     telemetry.addData(String.format("  left,top (%d)", i), "%.03f , %.03f",
+//                             recognition.getLeft(), recognition.getTop());
+//                     telemetry.addData(String.format("  right,bottom (%d)", i), "%.03f , %.03f",
+//                             recognition.getRight(), recognition.getBottom());
+//                 }
+//             }else {
+//                 telemetry.addLine("No recognitions!");
+//             }
 
-            telemetry.update();
+//             telemetry.update();
 
-            // Pace this loop so jaw action is reasonable speed.
-            sleep(500);
+//             // Pace this loop so jaw action is reasonable speed.
+//             sleep(500);
         }
     }
 }
