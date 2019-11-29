@@ -250,16 +250,17 @@ public class ScotBot {
     //Reposition the foundation for autonomous. This is basically the entire foundation-side autonomous.
     //It is here and not in the autonomous program because it can be used twice, once for each side,
     //with the only difference being the horizontal direction.
-    public void repositionFoundation(boolean isRedSide, ScotBot robot, VuforiaPos v) {
+    public void repositionFoundation(boolean isRedSide, ScotBot robot, VuforiaNav v) {
        double m = isRedSide ? -1.0 : 1.0; //multiplier for horizontal movement, short name because it is
        //used often... negative to move left on right side, positive to move right from blue left side
        robot.mecanumEncoderDrive(685.8 * m, 0.0, 0.0, AUTO_SPEED, robot); // move with encoders to be able to see a poster
-       v.moveTo(cs(1435.15, isRedSide), 0.0,MoveMode.X_THEN_Y, VuforiaBackup.ENCODER_DRIVE, 520.75 * m, 0.0, robot); //move to center of foundation w/ encoder backup
-       v.moveTo(cs(228.6, isRedSide), 0.0, MoveMode.X_THEN_Y, VuforiaBackup.ENCODER_DRIVE, -1206.55 * m, 0.0, robot); // move back to starting position
-       robot.mecanumEncoderDrive(cs(685.8, isRedSide), 0.0, 0.0, AUTO_SPEED, robot); //move back to poster visible
-       v.moveTo(cs(228.6, shouldCorrect), 1828.8, MoveMode.X_THEN_Y, AUTO_SPEED, robot); //move back under bridge
-    }
-    public double cs (double original, boolean shouldCorrect) { //correct postition for side of field
-       return shouldCorrect ? 3657.6 - original : original;
+       v.moveTo(393.65 * m, 1206.5,MoveMode.Y_THEN_X, VuforiaBackup.ENCODER_DRIVE, 520.75 * m, 0.0, robot); //move to center of foundation w/ encoder backup
+       // the second number  (^) is the vertical position of the foundation, it is currently trying to put the center of the robot 9 in from the edge
+       // but this should be changed as needed and the robot should start in the right position as a backup.
+       robot.baseplatePuller.setPosition(FOUNDATION_SERVO_DOWN);
+       v.moveTo(228.6, 1206.5, MoveMode.X_THEN_Y, VuforiaBackup.ENCODER_DRIVE, -1206.55 * m, 0.0, robot); // move back to starting position
+       robot.baseplatePuller.setPosition(FOUNDATION_SERVO_UP);
+       robot.mecanumEncoderDrive(685.8 * m, 0.0, 0.0, AUTO_SPEED, robot); //move back to poster visible
+       v.moveTo(250.0, 1828.8, MoveMode.X_THEN_Y,VuforiaBackup.ENCODER_DRIVE, -650.0 * m, 622.3, robot); //move back under bridge
     }
 }

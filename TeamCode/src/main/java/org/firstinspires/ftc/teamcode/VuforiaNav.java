@@ -554,7 +554,6 @@ public class VuforiaNav {
                     }
                 }
             }
-        }
 
         // Provide feedback as to where the robot is located (if we know).
         if (targetVisible) {
