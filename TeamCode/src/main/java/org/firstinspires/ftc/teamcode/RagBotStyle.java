@@ -98,9 +98,12 @@ public class RagBotStyle extends LinearOpMode {
             robot.mecanumDrive(driveX, driveY, turn);
             robot.armVertical.setPower(arm);
             if(currentGamepad.dpad_up){
-                robot.baseplatePuller.setPosition(.5);
+                robot.baseplatePuller.setPosition(ScotBot.FOUNDATION_SERVO_UP); //This was previosly
+                // just 0.5, which is very unclear. It is now a constant and anything that means a 
+                // certain thing that might be used multiple times should be too, but I'm not
+                // going to do the other ones for you since I don't need to use them. - Charlie
             } else if (currentGamepad.dpad_down){
-                robot.baseplatePuller.setPosition(1);
+                robot.baseplatePuller.setPosition(ScotBot.FOUNDATION_SERVO_DOWN);
             }
             if(currentGamepad.right_bumper){
                 robot.armGripper.setPosition(0.5);

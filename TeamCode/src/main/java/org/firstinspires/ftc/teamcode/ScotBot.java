@@ -58,10 +58,16 @@ public class ScotBot {
     public Servo baseplatePuller;
 
     public static final double COUNTS_PER_MM = 6.518225; // don't tell Mr. Savage this has too many significant figures
-    public static final double MECANUM_SIDE_MULTIPLIER = 2.0;
+    public static final double MECANUM_SIDE_MULTIPLIER = 2.0; //is this right? I thought mecanum was working but this looks wrong
+
+    public static final double AUTO_SPEED = 0.5;
 
     private ElapsedTime encoderTimeoutTimer = new ElapsedTime();
     public static final double ENCODER_TIMEOUT = 10.0;
+
+    public static final double FOUNDATION_SERVO_INIT = 0.0;
+    public static final double FOUNDATION_SERVO_UP = 0.0;
+    public static final double FOUNDATION_SERVO_DOWN = 0.5;
 
     public static final double MIN_SERVO = 0.0;
     public static final double MAX_SERVO = 1.0;
@@ -114,7 +120,7 @@ public class ScotBot {
         rightBack.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
         // Define and initialize ALL installed servos.
-        baseplatePuller.setPosition(0);
+        baseplatePuller.setPosition(FOUNDATION_SERVO_INIT);
         armGripper.setPosition(0);
         if (HARDWARE_TEAM_ADDED_PHONE_SERVO) {
             phoneRotator = hwMap.get(Servo.class, "phoneservo");
@@ -240,5 +246,20 @@ public class ScotBot {
 
     public static double getAngle(double x, double y) {
         return (1.5 * Math.PI - Math.atan2(y, x));
+    }
+    //Reposition the foundation for autonomous. This is basically the entire foundation-side autonomous.
+    //It is here and not in the autonomous program because it can be used twice, once for each side,
+    //with the only difference being the horizontal direction.
+    public void repositionFoundation(boolean isRedSide, ScotBot robot, VuforiaPos v) {
+       double m = isRedSide ? -1.0 : 1.0; //multiplier for horizontal movement, short name because it is
+       //used often... negative to move left on right side, positive to move right from blue left side
+       robot.mecanumEncoderDrive(685.8 * m, 0.0, 0.0, AUTO_SPEED, robot); // move with encoders to be able to see a poster
+       v.moveTo(cs(1435.15, isRedSide), 0.0,MoveMode.X_THEN_Y, VuforiaBackup.ENCODER_DRIVE, 520.75 * m, 0.0, robot); //move to center of foundation w/ encoder backup
+       v.moveTo(cs(228.6, isRedSide), 0.0, MoveMode.X_THEN_Y, VuforiaBackup.ENCODER_DRIVE, -1206.55 * m, 0.0, robot); // move back to starting position
+       robot.mecanumEncoderDrive(cs(685.8, isRedSide), 0.0, 0.0, AUTO_SPEED, robot); //move back to poster visible
+       v.moveTo(cs(228.6, shouldCorrect), 1828.8, MoveMode.X_THEN_Y, AUTO_SPEED, robot); //move back under bridge
+    }
+    public double cs (double original, boolean shouldCorrect) { //correct postition for side of field
+       return shouldCorrect ? 3657.6 - original : original;
     }
 }
