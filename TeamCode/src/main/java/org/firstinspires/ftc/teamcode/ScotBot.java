@@ -31,6 +31,7 @@
 
 package org.firstinspires.ftc.teamcode;
 
+import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
@@ -57,10 +58,17 @@ public class ScotBot {
     public Servo phoneRotator = null;
     public Servo baseplatePuller;
 
+    public BNO055IMU imu;
+
+    Orientation lastAngles = new Orientation();
+    double globalAngle, power = .30, correction;
+
     public static final double COUNTS_PER_MM = 6.518225; // don't tell Mr. Savage this has too many significant figures
     public static final double MECANUM_SIDE_MULTIPLIER = 2.0; //is this right? I thought mecanum was working but this looks wrong
 
+    public static final double TURN_SPEED = 0.6;
     public static final double AUTO_SPEED = 0.5;
+    public static final double FOUNDATION_PULL_SPEED = 0.3;
 
     private ElapsedTime encoderTimeoutTimer = new ElapsedTime();
     public static final double ENCODER_TIMEOUT = 10.0;
@@ -125,6 +133,20 @@ public class ScotBot {
         if (HARDWARE_TEAM_ADDED_PHONE_SERVO) {
             phoneRotator = hwMap.get(Servo.class, "phoneservo");
             phoneRotator.setPosition(PHONE_SERVO_START);
+        }
+
+        BNO055IMU.Parameters parameters = new BNO055IMU.Parameters();
+        parameters.mode = BNO055IMU.SensorMode.IMU;
+        parameters.angleUnit = BNO055IMU.AngleUnit.DEGREES;
+        parameters.accelUnit = BNO055IMU.AccelUnit.METERS_PERSEC_PERSEC;
+        parameters.loggingEnabled = false;
+
+        imu = hardwareMap.get(BNO055IMU.class, "imu");
+        imu.initialize(parameters);
+
+        while (!mainopmode.isStopRequested && !imu.isGyroCalibrated()) {
+           mainopmode.sleep(50);
+           mainopmode.idle();
         }
     }
 
@@ -254,14 +276,22 @@ public class ScotBot {
        double m = isRedSide ? -1.0 : 1.0; //multiplier for horizontal movement, short name because it is
        //used often... negative to move left on right side, positive to move right from blue left side
        robot.mecanumEncoderDrive(685.8 * m, 0.0, 0.0, AUTO_SPEED, robot); // move with encoders to be able to see a poster
-       v.moveTo(393.65 * m, 1206.5,MoveMode.Y_THEN_X, VuforiaBackup.ENCODER_DRIVE, 520.75 * m, 0.0, robot); //move to center of foundation w/ encoder backup
+       v.moveTo(-1435.15 * m, 1206.5,MoveMode.Y_THEN_X, VuforiaBackup.ENCODER_DRIVE, 520.75 * m, 0.0, robot); //move to center of foundation w/ encoder backup
        // the second number  (^) is the vertical position of the foundation, it is currently trying to put the center of the robot 9 in from the edge
        // but this should be changed as needed and the robot should start in the right position as a backup.
        robot.baseplatePuller.setPosition(FOUNDATION_SERVO_DOWN);
-       v.moveTo(228.6, 1206.5, MoveMode.X_THEN_Y, VuforiaBackup.ENCODER_DRIVE, -1206.55 * m, 0.0, robot); // move back to starting position
+       v.moveTo(-1600.2, 1206.5, MoveMode.X_THEN_Y, VuforiaBackup.ENCODER_DRIVE, -1206.55 * m, 0.0, robot); // move back to starting position
        robot.baseplatePuller.setPosition(FOUNDATION_SERVO_UP);
-       robot.mecanumEncoderDrive(685.8 * m, 0.0, 0.0, AUTO_SPEED, robot); //move back to poster visible
-       v.moveTo(250.0, 1828.8, MoveMode.X_THEN_Y,VuforiaBackup.ENCODER_DRIVE, -650.0 * m, 622.3, robot); //move back under bridge
+       robot.mecanumEncoderDrive(1143.8 * m, 0.0, 0.0, AUTO_SPEED, robot); //move back to poster visible
+       v.moveTo(-1578.8, 1828.8, MoveMode.X_THEN_Y,VuforiaBackup.ENCODER_DRIVE, -650.0 * m, 622.3, robot); //move back under bridge
+    }
+
+    public void repositionDragFoundation(boolean isRedSide, ScotBot robot, VuforiaNav v) { //This assumes it is behind the foundation and just drives forward to grab it.
+       double m = isRedSide ? -1.0 : 1.0;
+       robot.mecanumEncoderDrive(0.0, 750.0, 0.0, AUTO_SPEED, robot); //drive to foundation
+       robot.baseplatePuller.setPosition(FOUNDATION_SERVO_DOWN); //grab foundation
+       robot.mecanumEncoderDrive(0.0, -770.0, 0.0, FOUNDATION_PULL_SPEED, robot); //drive back sloooowly
+       robot.mecanumEncoderDrive(1289.05, 0.0, 0.0, AUTO_SPEED, robot); //go under bridge
     }
 
     public void deliverSkystones(boolean isRedSide, ScotBot robot, VuforiaNav v) {
@@ -288,8 +318,66 @@ public class ScotBot {
        v.moveTo(-900.6 * m, 1828.8, MoveMode.X_THEN_Y, VuforiaBackup.ENCODER_DRIVE, 0.0, -850.9, robot); //move back under bridge
     }
 
-    public void IMUTurn(double angle) {
-       //TODO: turn based on IMU
+    public void resetIMUAngle() { //reset the angle of the IMU to the current angle. Bind to a button if using POV controls.
+       lastAngles = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
+
+       globalAngle = 0;
+    }
+
+    public double getCorrectionAngle() { //get amount to correct movement to drive straight using IMU
+       double correction, angle, gain = 0.10; //gain = how much to correct
+
+       angle = getIMUAngle();
+
+       if (angle == 0) {
+          correction = 0;
+       }else {
+          correction = -angle;
+       }
+
+       correction *= gain;
+       return correction;
+    }
+
+    public double getIMUAngle() { //get current angle of robot using IMU
+       Orientation angles = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYZ, AngleUnit.DEGREES);
+       double deltaAngle = angles.firstAngle - lastAngles.firstAngle;
+
+       if (deltaAngle < -180) {
+          deltaAngle += 360;
+       }else if (deltaAngle > 180) {
+          deltaAngle -= 360;
+       }
+
+       globalAngle += deltaAngle;
+
+       lastAngles = angles;
+
+       return globalAngle;
+    }
+    public void IMUTurn(int degrees, double power) {
+       resetIMUAngle();
+
+       if (degrees < 0) {
+          mecanumDrive(0,0,TURN_SPEED); //turn right
+       }else if (degrees > 0) {
+          mecanumDrive(0,0,-TURN_SPEED); //turn left
+       }
+       else {return;} //direction is perfect
+
+       if (degrees < 0) {
+          while (opmode.opModeIsActive() && getAngle() == 0) {} //turn off 0
+
+          while (opmode.opModeIsActive() && getAngle() > degrees) {} //continue turning
+       }else {
+          while (opmode.opModeIsActive() && getAngle() < degrees) {}
+       }
+
+       mecanumDrive(0.0,0.0,0.0); //stop
+
+       opmode.sleep(300); //wait for stop
+
+       resetIMUAngle();
     }
 
     public void goToSkystone(ScotBot robot, VuforiaNav v) {
