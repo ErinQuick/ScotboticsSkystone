@@ -59,6 +59,6 @@ public class BlueFoundationPullAuto extends LinearOpMode {
         telemetry.addLine("Started");
         telemetry.update();
 
-        robot.repositionDragFoundation(false, robot, v);
+        robot.repositionDragFoundation(false, v);
     }
 }

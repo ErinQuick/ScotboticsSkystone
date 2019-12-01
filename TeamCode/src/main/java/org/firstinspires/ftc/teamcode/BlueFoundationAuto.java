@@ -59,6 +59,6 @@ public class BlueFoundationAuto extends LinearOpMode {
         telemetry.addLine("Started");
         telemetry.update();
 
-        robot.repositionFoundation(false, robot, v);
+        robot.repositionFoundation(false, v);
     }
 }

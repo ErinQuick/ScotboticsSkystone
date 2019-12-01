@@ -174,7 +174,7 @@ public class ScotBot {
     }
 
     //Drive to relative coordinates in millimeters
-    public void mecanumEncoderDrive(double x, double y, double turn, double speed, ScotBot robot) {
+    public void mecanumEncoderDrive(double x, double y, double turn, double speed) {
 
        int flTarget;
        int brTarget;
@@ -197,71 +197,71 @@ public class ScotBot {
         double blMultiplier = (distance * Math.sin(angle + Math.PI / 4) + turn); //Distance for each wheel to turn
 
         double totalDistance = Math.sqrt(Math.pow(x, 2) + Math.pow(y, 2));
-        robot.telemetry.addData("Angle: ", angle);
-        robot.telemetry.addData("Total Distance: ", totalDistance);
-        robot.telemetry.update();
+        telemetry.addData("Angle: ", angle);
+        telemetry.addData("Total Distance: ", totalDistance);
+        telemetry.update();
 
-        if (robot.opmode.opModeIsActive()) {
+        if (opmode.opModeIsActive()) {
 
-            robot.leftFront.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-            robot.rightBack.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-            robot.leftBack.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-            robot.rightFront.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+            leftFront.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+            rightBack.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+            leftBack.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+            rightFront.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
 
-            flTarget = (robot.leftFront.getCurrentPosition() + (int) (flMultiplier * COUNTS_PER_MM * totalDistance)) * -1;
-            brTarget = (robot.rightBack.getCurrentPosition() + (int) (brMultiplier * COUNTS_PER_MM * totalDistance)) * -1;
-            frTarget = (robot.rightFront.getCurrentPosition() + (int) (frMultiplier * COUNTS_PER_MM * totalDistance)) * -1;
-            blTarget = (robot.leftBack.getCurrentPosition() + (int) (blMultiplier * COUNTS_PER_MM * totalDistance)) * -1;
+            flTarget = (leftFront.getCurrentPosition() + (int) (flMultiplier * COUNTS_PER_MM * totalDistance)) * -1;
+            brTarget = (rightBack.getCurrentPosition() + (int) (brMultiplier * COUNTS_PER_MM * totalDistance)) * -1;
+            frTarget = (rightFront.getCurrentPosition() + (int) (frMultiplier * COUNTS_PER_MM * totalDistance)) * -1;
+            blTarget = (leftBack.getCurrentPosition() + (int) (blMultiplier * COUNTS_PER_MM * totalDistance)) * -1;
 
-            robot.leftFront.setTargetPosition(flTarget);
-            robot.rightBack.setTargetPosition(brTarget);
-            robot.rightFront.setTargetPosition(frTarget);
-            robot.leftBack.setTargetPosition(blTarget);
+            leftFront.setTargetPosition(flTarget);
+            rightBack.setTargetPosition(brTarget);
+            rightFront.setTargetPosition(frTarget);
+            leftBack.setTargetPosition(blTarget);
 
             // Turn On RUN_TO_POSITION
             //
-            robot.leftFront.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+            leftFront.setMode(DcMotor.RunMode.RUN_TO_POSITION);
             //
-            robot.rightBack.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+            rightBack.setMode(DcMotor.RunMode.RUN_TO_POSITION);
             //
-            robot.leftBack.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+            leftBack.setMode(DcMotor.RunMode.RUN_TO_POSITION);
             //
-            robot.rightFront.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+            rightFront.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
             encoderTimeoutTimer.reset();
 
-            robot.leftFront.setPower(speed * flMultiplier);
-            robot.rightBack.setPower(speed * brMultiplier);
-            robot.rightFront.setPower(speed * frMultiplier);
-            robot.leftBack.setPower(speed * blMultiplier);
+            leftFront.setPower(speed * flMultiplier);
+            rightBack.setPower(speed * brMultiplier);
+            rightFront.setPower(speed * frMultiplier);
+            leftBack.setPower(speed * blMultiplier);
 
-            while (robot.opmode.opModeIsActive() &&
+            while (opmode.opModeIsActive() &&
                     (encoderTimeoutTimer.seconds() < ENCODER_TIMEOUT) &&
-                    (robot.rightFront.isBusy() && robot.rightBack.isBusy() && robot.leftBack.isBusy() && robot.leftFront.isBusy())) {
+                    (rightFront.isBusy() && rightBack.isBusy() && leftBack.isBusy() && leftFront.isBusy())) {
 
                 // Display it for the driver.
-               // robot.telemetry.addData("Target: ", "Running to %7d,%7d,%7d,%7d", flTarget, brTarget, frTarget, blTarget);
-               // robot.telemetry.addData("Current: ", "Running at %7d,%7d,%7d,%7d",
-               //         robot.leftFront.getCurrentPosition(),
-               //         robot.rightBack.getCurrentPosition(),
-               //         robot.rightFront.getCurrentPosition(),
-               //         robot.leftBack.getCurrentPosition());
-               // robot.telemetry.addData("targetPos: ", "Going To: %7f, %7f, and turning %7f", x, y, turn);
-               // robot.telemetry.update();
+               // telemetry.addData("Target: ", "Running to %7d,%7d,%7d,%7d", flTarget, brTarget, frTarget, blTarget);
+               // telemetry.addData("Current: ", "Running at %7d,%7d,%7d,%7d",
+               //         leftFront.getCurrentPosition(),
+               //         rightBack.getCurrentPosition(),
+               //         rightFront.getCurrentPosition(),
+               //         leftBack.getCurrentPosition());
+               // telemetry.addData("targetPos: ", "Going To: %7f, %7f, and turning %7f", x, y, turn);
+               // telemetry.update();
             }
 
             // Stop all motion;
-            robot.leftFront.setPower(0);
-            robot.rightFront.setPower(0);
-            robot.leftBack.setPower(0);
-            robot.rightBack.setPower(0);
+            leftFront.setPower(0);
+            rightFront.setPower(0);
+            leftBack.setPower(0);
+            rightBack.setPower(0);
 
             
             // Turn off RUN_TO_POSITION
-            robot.leftFront.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-            robot.rightBack.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-            robot.leftBack.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-            robot.rightFront.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+            leftFront.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+            rightBack.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+            leftBack.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+            rightFront.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
         }
     }
@@ -272,49 +272,49 @@ public class ScotBot {
     //Reposition the foundation for autonomous. This is basically the entire foundation-side autonomous.
     //It is here and not in the autonomous program because it can be used twice, once for each side,
     //with the only difference being the horizontal direction.
-    public void repositionFoundation(boolean isRedSide, ScotBot robot, VuforiaNav v) {
+    public void repositionFoundation(boolean isRedSide, VuforiaNav v) {
        double m = isRedSide ? -1.0 : 1.0; //multiplier for horizontal movement, short name because it is
        //used often... negative to move left on right side, positive to move right from blue left side
-       robot.mecanumEncoderDrive(685.8 * m, 0.0, 0.0, AUTO_SPEED, robot); // move with encoders to be able to see a poster
-       v.moveTo(-1435.15 * m, 1206.5,MoveMode.Y_THEN_X, VuforiaBackup.ENCODER_DRIVE, 520.75 * m, 0.0, robot); //move to center of foundation w/ encoder backup
+       mecanumEncoderDrive(685.8 * m, 0.0, 0.0, AUTO_SPEED); // move with encoders to be able to see a poster
+       v.moveTo(-1435.15 * m, 1206.5,MoveMode.Y_THEN_X, VuforiaBackup.ENCODER_DRIVE, 520.75 * m, 0.0); //move to center of foundation w/ encoder backup
        // the second number  (^) is the vertical position of the foundation, it is currently trying to put the center of the robot 9 in from the edge
        // but this should be changed as needed and the robot should start in the right position as a backup.
-       robot.baseplatePuller.setPosition(FOUNDATION_SERVO_DOWN);
-       v.moveTo(-1600.2, 1206.5, MoveMode.X_THEN_Y, VuforiaBackup.ENCODER_DRIVE, -1206.55 * m, 0.0, robot); // move back to starting position
-       robot.baseplatePuller.setPosition(FOUNDATION_SERVO_UP);
-       robot.mecanumEncoderDrive(1143.8 * m, 0.0, 0.0, AUTO_SPEED, robot); //move back to poster visible
-       v.moveTo(-1578.8, 1828.8, MoveMode.X_THEN_Y,VuforiaBackup.ENCODER_DRIVE, -650.0 * m, 622.3, robot); //move back under bridge
+       baseplatePuller.setPosition(FOUNDATION_SERVO_DOWN);
+       v.moveTo(-1600.2, 1206.5, MoveMode.X_THEN_Y, VuforiaBackup.ENCODER_DRIVE, -1206.55 * m, 0.0); // move back to starting position
+       baseplatePuller.setPosition(FOUNDATION_SERVO_UP);
+       mecanumEncoderDrive(1143.8 * m, 0.0, 0.0, AUTO_SPEED, robot); //move back to poster visible
+       v.moveTo(-1578.8, 1828.8, MoveMode.X_THEN_Y,VuforiaBackup.ENCODER_DRIVE, -650.0 * m, 622.3); //move back under bridge
     }
 
-    public void repositionDragFoundation(boolean isRedSide, ScotBot robot, VuforiaNav v) { //This assumes it is behind the foundation and just drives forward to grab it.
+    public void repositionDragFoundation(boolean isRedSide, VuforiaNav v) { //This assumes it is behind the foundation and just drives forward to grab it.
        double m = isRedSide ? -1.0 : 1.0;
-       robot.mecanumEncoderDrive(0.0, 750.0, 0.0, AUTO_SPEED, robot); //drive to foundation
-       robot.baseplatePuller.setPosition(FOUNDATION_SERVO_DOWN); //grab foundation
-       robot.mecanumEncoderDrive(0.0, -770.0, 0.0, FOUNDATION_PULL_SPEED, robot); //drive back sloooowly
-       robot.mecanumEncoderDrive(1289.05, 0.0, 0.0, AUTO_SPEED, robot); //go under bridge
+       mecanumEncoderDrive(0.0, 750.0, 0.0, AUTO_SPEED); //drive to foundation
+       baseplatePuller.setPosition(FOUNDATION_SERVO_DOWN); //grab foundation
+       mecanumEncoderDrive(0.0, -770.0, 0.0, FOUNDATION_PULL_SPEED); //drive back sloooowly
+       mecanumEncoderDrive(1289.05, 0.0, 0.0, AUTO_SPEED); //go under bridge
     }
 
-    public void deliverSkystones(boolean isRedSide, ScotBot robot, VuforiaNav v) {
+    public void deliverSkystones(boolean isRedSide, VuforiaNav v) {
        double m = isRedSide ? -1.0 : 1.0;
-       robot.mecanumEncoderDrive(0.0, 762.0, 0.0, AUTO_SPEED, robot); //drive in front of skystones
-       robot.goToSkystone(robot, v); //drive in front of one skystone
-       robot.mecanumEncoderDrive(0.0, 304.0, 0.0, AUTO_SPEED, robot); //drive forwards into the skystone
+       mecanumEncoderDrive(0.0, 762.0, 0.0, AUTO_SPEED); //drive in front of skystones
+       goToSkystone(v); //drive in front of one skystone
+       mecanumEncoderDrive(0.0, 304.0, 0.0, AUTO_SPEED); //drive forwards into the skystone
        //TODO: lower arm and close
-       robot.mecanumEncoderDrive(0.0, -950.0, 0.0, AUTO_SPEED, robot); //drive back
-       robot.IMUTurn(-90.0 * m);
-       robot.mecanumEncoderDrive(0.0, 2757.0, 0.0, AUTO_SPEED, robot); //drive to foundation
+       mecanumEncoderDrive(0.0, -950.0, 0.0, AUTO_SPEED); //drive back
+       IMUTurn(-90.0 * m);
+       mecanumEncoderDrive(0.0, 2757.0, 0.0, AUTO_SPEED); //drive to foundation
        //TODO: release skystone
-       robot.mecanumEncoderDrive(680.0 * m, 0.0, 0.0, AUTO_SPEED, robot); //go to where poster is visible
+       mecanumEncoderDrive(680.0 * m, 0.0, 0.0, AUTO_SPEED); //go to where poster is visible
        v.moveTo(-914.4 * m, -950.0, MoveMode.X_THEN_Y, VuforiaBackup.ENCODER_DRIVE, 0.0, -2750.0, robot); //move back to legos
-       robot.IMUTurn(90.0 * m);
-       robot.goToSkystone(robot, v);
-       robot.mecanumEncoderDrive(0.0, 304.0, 0.0, AUTO_SPEED, robot); //drive forwards into the skystone
+       IMUTurn(90.0 * m);
+       goToSkystone(v);
+       mecanumEncoderDrive(0.0, 304.0, 0.0, AUTO_SPEED); //drive forwards into the skystone
        //TODO: lower arm and close
-       robot.mecanumEncoderDrive(0.0, -950.0, 0.0, AUTO_SPEED, robot); //drive back
-       robot.IMUTurn(-90.0 * m);
-       robot.mecanumEncoderDrive(0.0, 2757.0, 0.0, AUTO_SPEED, robot); //drive to foundation
+       mecanumEncoderDrive(0.0, -950.0, 0.0, AUTO_SPEED); //drive back
+       IMUTurn(-90.0 * m);
+       mecanumEncoderDrive(0.0, 2757.0, 0.0, AUTO_SPEED); //drive to foundation
        //TODO: release skystone
-       robot.mecanumEncoderDrive(680.0 * m, 0.0, 0.0, AUTO_SPEED, robot); //go to where poster is visible
+       mecanumEncoderDrive(680.0 * m, 0.0, 0.0, AUTO_SPEED); //go to where poster is visible
        v.moveTo(-900.6 * m, 1828.8, MoveMode.X_THEN_Y, VuforiaBackup.ENCODER_DRIVE, 0.0, -850.9, robot); //move back under bridge
     }
 
@@ -380,7 +380,7 @@ public class ScotBot {
        resetIMUAngle();
     }
 
-    public void goToSkystone(ScotBot robot, VuforiaNav v) {
+    public void goToSkystone(VuforiaNav v) {
        List<Recognition> legos = v.getLegos(robot);
        ElapsedTime legoTimer = new ElapsedTime(); //stop if it is running too long
        ElapsedTime visibleTimer = new ElapsedTime(); //change direction if nothing visible for a while
@@ -392,7 +392,7 @@ public class ScotBot {
        while (!inFrontOfLego) {
           for (Recognition lego : legos) {
              if (lego.label.equals("Skystone")) {
-                robot.telemetry.addLine("Found Skystone");
+                telemetry.addLine("Found Skystone");
                 double oldOffset = legoOffset;
                 legoOffset = (lego.getLeft() - lego.getRight()); 
                 if (oldOffset != null && legoOffset != null) {
@@ -413,8 +413,8 @@ public class ScotBot {
           if (visibleTimer.seconds() > 2.0) {
              speed = speed > 0 ? -0.3 : 0.3; //switch direction if not visible
           }
-          robot.mecanumDrive(speed,0.0,0.0);
+          mecanumDrive(speed,0.0,0.0);
        }
-       robot.mecanumDrive(0.0,0.0,0.0);
+       mecanumDrive(0.0,0.0,0.0);
     }
 }

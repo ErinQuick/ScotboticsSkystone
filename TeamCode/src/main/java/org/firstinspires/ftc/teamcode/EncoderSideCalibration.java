@@ -24,6 +24,6 @@ public class EncoderSideCalibration extends LinearOpMode {
         telemetry.update();
 
         // run until the end of the match (driver presses STOP)
-        robot.mecanumEncoderDrive(500.0, 0.0, 0.0, .5, robot);
+        robot.mecanumEncoderDrive(500.0, 0.0, 0.0, .5);
     }
 }

@@ -27,6 +27,6 @@ public class EncoderForwardCalibration extends LinearOpMode {
         telemetry.update();
 
         // run until the end of the match (driver presses STOP)
-        robot.mecanumEncoderDrive(0.0, 500.0, 0.0, .5, robot);
+        robot.mecanumEncoderDrive(0.0, 500.0, 0.0, .5);
     }
 }
