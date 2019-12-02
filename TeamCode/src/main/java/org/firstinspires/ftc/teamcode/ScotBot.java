@@ -161,7 +161,7 @@ public class ScotBot {
 
     //x,y: direction to move from -1,-1 to 1,1
     //turn: direction to turn from -1 to 1
-    public void mecanumDrive(double x, double y, double turn) {
+    public void mecanumDrive(double x, double y, double turn, boolean correctTurn) {
         x *= -1; //it is reversed for some reason
         double angle = getAngle(x, y);
 
@@ -169,6 +169,10 @@ public class ScotBot {
         speed *= Math.sqrt(2);//The comment above sounds really stupid but it actually kind of works, this line speeds it up.
         //If something tries to use this for a speed that is outside of the circle of the joystick, this will make the motor speeds
         //above their maximum, but if it is only for driving this is OK.
+
+        if (Math.abs(turn) < 0.05 && correctTurn) {
+           turn += getCorrectionAngle();
+        }
 
         double flSpeed = speed * Math.sin(angle + Math.PI / 4) + turn;
         double brSpeed = speed * Math.sin(angle + Math.PI / 4) - turn;
@@ -180,6 +184,10 @@ public class ScotBot {
         rightFront.setPower(frSpeed);
         leftBack.setPower(blSpeed);
 
+    }
+
+    public void mecanumDrive(double x, double y, double turn) {
+       mecanumDrive(x,y,turn,false);
     }
 
     //Drive to relative coordinates in millimeters

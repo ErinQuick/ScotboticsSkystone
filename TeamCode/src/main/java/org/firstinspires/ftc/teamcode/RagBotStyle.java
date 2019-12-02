@@ -95,7 +95,7 @@ public class RagBotStyle extends LinearOpMode {
             double driveY = Math.pow(currentGamepad.right_stick_y, 3);
             double turn  =  Math.pow(currentGamepad.left_stick_x, 3);
             double arm = Math.pow(currentGamepad.left_stick_y, 3);
-            robot.mecanumDrive(driveX, driveY, turn);
+            robot.mecanumDrive(driveX, driveY, turn, true);
             robot.armVertical.setPower(arm);
             if(currentGamepad.dpad_up){
                 robot.baseplatePuller.setPosition(ScotBot.FOUNDATION_SERVO_UP); //This was previosly

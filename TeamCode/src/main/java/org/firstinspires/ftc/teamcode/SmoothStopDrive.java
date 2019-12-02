@@ -121,7 +121,7 @@ public class SmoothStopDrive extends LinearOpMode {
             driveY += diff;
          }
 
-         robot.mecanumDrive(driveX, driveY, turn);
+         robot.mecanumDrive(driveX, driveY, turn, true);
 
          robot.armVertical.setPower(arm);
 
