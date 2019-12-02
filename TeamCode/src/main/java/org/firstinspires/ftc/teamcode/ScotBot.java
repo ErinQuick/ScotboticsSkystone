@@ -55,7 +55,8 @@ public class ScotBot {
     public DcMotor armVertical; //I am just initializing these variables here so it is useless to declare them as null.
     public Servo armGripper;
     public Servo phoneRotator = null;
-    public Servo baseplatePuller;
+    public Servo baseplatePuller0;
+    public Servo baseplatePuller1;
 
     public static final double COUNTS_PER_MM = 6.518225; // don't tell Mr. Savage this has too many significant figures
     public static final double MECANUM_SIDE_MULTIPLIER = 2.0;
@@ -69,6 +70,12 @@ public class ScotBot {
     public static final double PHONE_SERVO_START = 0.5;
 
     public static final boolean HARDWARE_TEAM_ADDED_PHONE_SERVO = false;
+
+    public static final double BASEPLATE_PULLER_0_UP = 0.0;
+    public static final double BASEPLATE_PULLER_1_UP = 1.0;
+    public static final double BASEPLATE_PULLER_0_DOWN = 1.0;
+    public static final double BASEPLATE_PULLER_1_DOWN = 0.0;
+
 
     /* local OpMode members. */
     public HardwareMap hwMap = null;
@@ -98,7 +105,9 @@ public class ScotBot {
         armVertical.setPower(0);
         // -- Servos --
         armGripper = hwMap.get(Servo.class, "armServoMotor");
-        baseplatePuller = hwMap.get(Servo.class, "baseplatePullerServo");
+        baseplatePuller0 = hwMap.get(Servo.class, "baseplatePuller0");
+        baseplatePuller1 = hwMap.get(Servo.class, "baseplatePuller1");
+
 
         // Set all motors to zero power, otherwise we will have McInnisBot not ScotBot and we will have to use a stun
         leftFront.setPower(0);
@@ -114,7 +123,8 @@ public class ScotBot {
         rightBack.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
         // Define and initialize ALL installed servos.
-        baseplatePuller.setPosition(0);
+        baseplatePuller0.setPosition(.5);
+        baseplatePuller1.setPosition(.5);
         armGripper.setPosition(0);
         if (HARDWARE_TEAM_ADDED_PHONE_SERVO) {
             phoneRotator = hwMap.get(Servo.class, "phoneservo");
