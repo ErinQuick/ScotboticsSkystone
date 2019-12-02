@@ -57,7 +57,7 @@ public class TestDrive extends LinearOpMode {
         // Wait for the game to start (driver presses PLAY)
         waitForStart();
         // Robot has been started, now we can expand
-        robot.baseplatePuller.setPosition(.5);
+        robot.baseplatePuller0.setPosition(.5);
         telemetry.addData("Say", "ScotBot TestDrive Started!");
         telemetry.update();
 

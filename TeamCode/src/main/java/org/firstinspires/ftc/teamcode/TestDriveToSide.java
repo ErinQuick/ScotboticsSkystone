@@ -57,10 +57,7 @@ public class TestDriveToSide extends LinearOpMode {
         telemetry.addLine("Started");
         telemetry.update();
 
-<<<<<<< HEAD
         //robot.mecanumEncoderDrive(-100.0,0.0,0.0,0);
-=======
         robot.mecanumEncoderDrive(-100.0, 0.0, 0.0, 0.5, robot);
->>>>>>> origin/vuforianavigation
     }
 }
