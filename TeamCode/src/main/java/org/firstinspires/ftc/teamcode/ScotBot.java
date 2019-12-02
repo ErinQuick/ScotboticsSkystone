@@ -38,8 +38,15 @@ import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
+import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import org.firstinspires.ftc.robotcore.external.Telemetry;
+import org.firstinspires.ftc.robotcore.external.tfod.Recognition;
+import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
+import org.firstinspires.ftc.robotcore.external.navigation.AxesOrder;
+import org.firstinspires.ftc.robotcore.external.navigation.AxesReference;
+import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
+import java.util.List;
 
 /**
  * This is NOT an opmode. This is a class for the robot.
@@ -141,10 +148,10 @@ public class ScotBot {
         parameters.accelUnit = BNO055IMU.AccelUnit.METERS_PERSEC_PERSEC;
         parameters.loggingEnabled = false;
 
-        imu = hardwareMap.get(BNO055IMU.class, "imu");
+        imu = ahwMap.get(BNO055IMU.class, "imu");
         imu.initialize(parameters);
 
-        while (!mainopmode.isStopRequested && !imu.isGyroCalibrated()) {
+        while (!mainopmode.isStopRequested() && !imu.isGyroCalibrated()) {
            mainopmode.sleep(50);
            mainopmode.idle();
         }
@@ -276,14 +283,14 @@ public class ScotBot {
        double m = isRedSide ? -1.0 : 1.0; //multiplier for horizontal movement, short name because it is
        //used often... negative to move left on right side, positive to move right from blue left side
        mecanumEncoderDrive(685.8 * m, 0.0, 0.0, AUTO_SPEED); // move with encoders to be able to see a poster
-       v.moveTo(-1435.15 * m, 1206.5,MoveMode.Y_THEN_X, VuforiaBackup.ENCODER_DRIVE, 520.75 * m, 0.0); //move to center of foundation w/ encoder backup
-       // the second number  (^) is the vertical position of the foundation, it is currently trying to put the center of the robot 9 in from the edge
+       v.moveTo(-1435.15 * m, 1206.5,VuforiaNav.MoveMode.Y_THEN_X, VuforiaNav.VuforiaBackup.ENCODER_DRIVE, 520.75 * m, 0.0, this); //move to center of foundation w/ encoder backup
+       // the second number  (^) is the vertical position of the foundation, it is currently trying to put the center of the this 9 in from the edge
        // but this should be changed as needed and the robot should start in the right position as a backup.
        baseplatePuller.setPosition(FOUNDATION_SERVO_DOWN);
-       v.moveTo(-1600.2, 1206.5, MoveMode.X_THEN_Y, VuforiaBackup.ENCODER_DRIVE, -1206.55 * m, 0.0); // move back to starting position
+       v.moveTo(-1600.2, 1206.5, VuforiaNav.MoveMode.X_THEN_Y, VuforiaNav.VuforiaBackup.ENCODER_DRIVE, -1206.55 * m, 0.0, this); // move back to starting position
        baseplatePuller.setPosition(FOUNDATION_SERVO_UP);
-       mecanumEncoderDrive(1143.8 * m, 0.0, 0.0, AUTO_SPEED, robot); //move back to poster visible
-       v.moveTo(-1578.8, 1828.8, MoveMode.X_THEN_Y,VuforiaBackup.ENCODER_DRIVE, -650.0 * m, 622.3); //move back under bridge
+       mecanumEncoderDrive(1143.8 * m, 0.0, 0.0, AUTO_SPEED); //move back to poster visible
+       v.moveTo(-1578.8, 1828.8, VuforiaNav.MoveMode.X_THEN_Y,VuforiaNav.VuforiaBackup.ENCODER_DRIVE, -650.0 * m, 622.3, this); //move back under bridge
     }
 
     public void repositionDragFoundation(boolean isRedSide, VuforiaNav v) { //This assumes it is behind the foundation and just drives forward to grab it.
@@ -301,21 +308,21 @@ public class ScotBot {
        mecanumEncoderDrive(0.0, 304.0, 0.0, AUTO_SPEED); //drive forwards into the skystone
        //TODO: lower arm and close
        mecanumEncoderDrive(0.0, -950.0, 0.0, AUTO_SPEED); //drive back
-       IMUTurn(-90.0 * m);
+       IMUTurn(-90 * (int)m, TURN_SPEED);
        mecanumEncoderDrive(0.0, 2757.0, 0.0, AUTO_SPEED); //drive to foundation
        //TODO: release skystone
        mecanumEncoderDrive(680.0 * m, 0.0, 0.0, AUTO_SPEED); //go to where poster is visible
-       v.moveTo(-914.4 * m, -950.0, MoveMode.X_THEN_Y, VuforiaBackup.ENCODER_DRIVE, 0.0, -2750.0, robot); //move back to legos
-       IMUTurn(90.0 * m);
+       v.moveTo(-914.4 * m, -950.0, VuforiaNav.MoveMode.X_THEN_Y, VuforiaNav.VuforiaBackup.ENCODER_DRIVE, 0.0, -2750.0, this); //move back to legos
+       IMUTurn(90 * (int)m, TURN_SPEED);
        goToSkystone(v);
        mecanumEncoderDrive(0.0, 304.0, 0.0, AUTO_SPEED); //drive forwards into the skystone
        //TODO: lower arm and close
        mecanumEncoderDrive(0.0, -950.0, 0.0, AUTO_SPEED); //drive back
-       IMUTurn(-90.0 * m);
+       IMUTurn(-90 * (int)m, TURN_SPEED);
        mecanumEncoderDrive(0.0, 2757.0, 0.0, AUTO_SPEED); //drive to foundation
        //TODO: release skystone
        mecanumEncoderDrive(680.0 * m, 0.0, 0.0, AUTO_SPEED); //go to where poster is visible
-       v.moveTo(-900.6 * m, 1828.8, MoveMode.X_THEN_Y, VuforiaBackup.ENCODER_DRIVE, 0.0, -850.9, robot); //move back under bridge
+       v.moveTo(-900.6 * m, 1828.8, VuforiaNav.MoveMode.X_THEN_Y, VuforiaNav.VuforiaBackup.ENCODER_DRIVE, 0.0, -850.9, this); //move back under bridge
     }
 
     public void resetIMUAngle() { //reset the angle of the IMU to the current angle. Bind to a button if using POV controls.
@@ -366,11 +373,11 @@ public class ScotBot {
        else {return;} //direction is perfect
 
        if (degrees < 0) {
-          while (opmode.opModeIsActive() && getAngle() == 0) {} //turn off 0
+          while (opmode.opModeIsActive() && getIMUAngle() == 0) {} //turn off 0
 
-          while (opmode.opModeIsActive() && getAngle() > degrees) {} //continue turning
+          while (opmode.opModeIsActive() && getIMUAngle() > degrees) {} //continue turning
        }else {
-          while (opmode.opModeIsActive() && getAngle() < degrees) {}
+          while (opmode.opModeIsActive() && getIMUAngle() < degrees) {}
        }
 
        mecanumDrive(0.0,0.0,0.0); //stop
@@ -381,28 +388,29 @@ public class ScotBot {
     }
 
     public void goToSkystone(VuforiaNav v) {
-       List<Recognition> legos = v.getLegos(robot);
+       List<Recognition> legos = v.getLegos(this);
        ElapsedTime legoTimer = new ElapsedTime(); //stop if it is running too long
        ElapsedTime visibleTimer = new ElapsedTime(); //change direction if nothing visible for a while
-       double legoOffset;
+       double legoOffset = 0.0;
        boolean inFrontOfLego = false;
        double speed = 0.3;
        visibleTimer.reset();
        legoTimer.reset();
        while (!inFrontOfLego) {
           for (Recognition lego : legos) {
-             if (lego.label.equals("Skystone")) {
+             if (lego.getLabel().equals("Skystone")) {
                 telemetry.addLine("Found Skystone");
                 double oldOffset = legoOffset;
                 legoOffset = (lego.getLeft() - lego.getRight()); 
-                if (oldOffset != null && legoOffset != null) {
+                // if (oldOffset != null && legoOffset != null) { //if there is a null error we might need this check,
+                // but doubles cant be null so we need to check a different way
                    if ((oldOffset - legoOffset) > 0) {
                       speed = Math.min((oldOffset - legoOffset) / 100.0, 0.5);
                    }else {
                       speed = Math.max((oldOffset - legoOffset) / 100.0, -0.5); // set speed to go to lego
                       //but not faster than 0.5, change the 100.0 to change how much it slows down
                    }
-                }
+                // }
                 visibleTimer.reset();
                 break;
              }

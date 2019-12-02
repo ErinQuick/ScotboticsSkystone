@@ -59,6 +59,6 @@ public class TestDriveToPoster extends LinearOpMode {
         telemetry.addLine("Started");
         telemetry.update();
 
-        v.moveTo(914.4,1200.0,0,robot);
+        v.moveTo(914.4,1200.0, VuforiaNav.MoveMode.X_THEN_Y,VuforiaNav.VuforiaBackup.NOTHING,robot);
     }
 }

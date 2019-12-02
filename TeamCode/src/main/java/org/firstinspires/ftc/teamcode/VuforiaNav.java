@@ -417,22 +417,19 @@ public class VuforiaNav {
         LocRot currentPos = check(robot, vuforiaBackup);  // find where the robot is on the field
 
         if (currentPos == null) {
-           if (vuforiaBackup == ENCODER_DRIVE) {
+           if (vuforiaBackup == VuforiaBackup.ENCODER_DRIVE) {
               robot.telemetry.addLine("Using encoders as backup");
               switch(moveMode) {
-                 case NOTHING:
-                  //do nothing
-                  break;
                  case X_THEN_Y: 
-                  robot.mecanumEncoderDrive(backupX,0,0,MECANUM_MOVE_TO_SPEED, robot);
-                  robot.mecanumEncoderDrive(0,backupY,0,MECANUM_MOVE_TO_SPEED, robot);
+                  robot.mecanumEncoderDrive(backupX,0.0,0.0,MECANUM_MOVE_TO_SPEED);
+                  robot.mecanumEncoderDrive(0.0,backupY,0.0,MECANUM_MOVE_TO_SPEED);
                   break;
                  case Y_THEN_X:
-                  robot.mecanumEncoderDrive(0,backupY,0,MECANUM_MOVE_TO_SPEED, robot);
-                  robot.mecanumEncoderDrive(backupX,0,0,MECANUM_MOVE_TO_SPEED, robot);
+                  robot.mecanumEncoderDrive(0.0,backupY,0.0,MECANUM_MOVE_TO_SPEED);
+                  robot.mecanumEncoderDrive(backupX,0.0,0.0,MECANUM_MOVE_TO_SPEED);
                   break;
                  case DIAGONAL:
-                  robot.mecanumEncoderDrive(backupX,backupY,0,MECANUM_MOVE_TO_SPEED, robot);
+                  robot.mecanumEncoderDrive(backupX,backupY,0.0,MECANUM_MOVE_TO_SPEED);
                   break;
                  case TURN_THEN_DRIVE:
                   if (backupY == 0.0) {
@@ -450,8 +447,8 @@ public class VuforiaNav {
 
                   double driveDistance = Math.sqrt((backupX * backupX) + (backupY * backupY));
 
-                  robot.mecanumEncoderDrive(0,0,fractionToTurn,MECANUM_MOVE_TO_SPEED, robot); //encoderdrive might not turn right, but this should work
-                  robot.mecanumEncoderDrive(0,driveDistance, 0, MECANUM_MOVE_TO_SPEED, robot);
+                  robot.mecanumEncoderDrive(0.0,0.0,fractionToTurn,MECANUM_MOVE_TO_SPEED); //encoderdrive might not turn right, but this should work
+                  robot.mecanumEncoderDrive(0.0,driveDistance, 0.0, MECANUM_MOVE_TO_SPEED);
                   break;
               }
               return;
@@ -468,19 +465,16 @@ public class VuforiaNav {
         robot.telemetry.update();
 
         switch(moveMode) {
-           case NOTHING:
-            //do nothing
-            break;
            case X_THEN_Y: 
-            robot.mecanumEncoderDrive(dx,0,0,MECANUM_MOVE_TO_SPEED, robot);
-            robot.mecanumEncoderDrive(0,dy,0,MECANUM_MOVE_TO_SPEED, robot);
+            robot.mecanumEncoderDrive(dx,0.0,0.0,MECANUM_MOVE_TO_SPEED);
+            robot.mecanumEncoderDrive(0.0,dy,0.0,MECANUM_MOVE_TO_SPEED);
             break;
            case Y_THEN_X:
-            robot.mecanumEncoderDrive(0,dy,0,MECANUM_MOVE_TO_SPEED, robot);
-            robot.mecanumEncoderDrive(dx,0,0,MECANUM_MOVE_TO_SPEED, robot);
+            robot.mecanumEncoderDrive(0.0,dy,0.0,MECANUM_MOVE_TO_SPEED);
+            robot.mecanumEncoderDrive(dx,0.0,0.0,MECANUM_MOVE_TO_SPEED);
             break;
            case DIAGONAL:
-            robot.mecanumEncoderDrive(dx,dy,0,MECANUM_MOVE_TO_SPEED, robot);
+            robot.mecanumEncoderDrive(dx,dy,0.0,MECANUM_MOVE_TO_SPEED);
             break;
            case TURN_THEN_DRIVE:
             if (dy == 0.0) {
@@ -498,8 +492,8 @@ public class VuforiaNav {
 
             double driveDistance = Math.sqrt((dx * dx) + (dy * dy));
 
-            robot.mecanumEncoderDrive(0,0,fractionToTurn,MECANUM_MOVE_TO_SPEED, robot); //encoderdrive might not turn right, but this should work
-            robot.mecanumEncoderDrive(0,driveDistance, 0, MECANUM_MOVE_TO_SPEED, robot);
+            robot.mecanumEncoderDrive(0.0,0.0,fractionToTurn,MECANUM_MOVE_TO_SPEED); //encoderdrive might not turn right, but this should work
+            robot.mecanumEncoderDrive(0.0,driveDistance, 0.0, MECANUM_MOVE_TO_SPEED);
             break;
         }
     }
@@ -544,7 +538,7 @@ public class VuforiaNav {
                           case TURN_ROBOT:
                             robot.telemetry.addLine("the phone can't rotate, turning robot");
                             robot.telemetry.update();
-                            robot.mecanumEncoderDrive(0, 0, 0.25, 0.5, robot);
+                            robot.mecanumEncoderDrive(0, 0, 0.25, 0.5);
                             break;
                           default:
                             return null; //If we want to stop trying, continue where this was called
