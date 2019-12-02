@@ -89,6 +89,8 @@ public class ScotBot {
     public static final double SERVO_DEGREES = 360.0;
     public static final double PHONE_SERVO_START = 0.5;
 
+    public static final double LEGO_CENTER_OFFSET = 400.0;
+
     public static final boolean HARDWARE_TEAM_ADDED_PHONE_SERVO = false;
 
     /* local OpMode members. */
@@ -401,7 +403,7 @@ public class ScotBot {
              if (lego.getLabel().equals("Skystone")) {
                 telemetry.addLine("Found Skystone");
                 double oldOffset = legoOffset;
-                legoOffset = (lego.getLeft() - lego.getRight()); 
+                legoOffset = (lego.getLeft() - lego.getRight()) - LEGO_CENTER_OFFSET; 
                 // if (oldOffset != null && legoOffset != null) { //if there is a null error we might need this check,
                 // but doubles cant be null so we need to check a different way
                    if ((oldOffset - legoOffset) > 0) {
