@@ -125,7 +125,7 @@ public class ScotBot {
         // Define and initialize ALL installed servos.
         baseplatePuller0.setPosition(.5);
         baseplatePuller1.setPosition(.5);
-        armGripper.setPosition(0);
+        armGripper.setPosition(1);
         if (HARDWARE_TEAM_ADDED_PHONE_SERVO) {
             phoneRotator = hwMap.get(Servo.class, "phoneservo");
             phoneRotator.setPosition(PHONE_SERVO_START);
