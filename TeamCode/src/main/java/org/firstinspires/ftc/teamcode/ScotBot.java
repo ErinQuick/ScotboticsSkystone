@@ -102,7 +102,6 @@ public class ScotBot {
         // -- Arm Motors --
         armVertical = hwMap.get(DcMotor.class, "armRotaryMotor");
         armVertical.setDirection(DcMotor.Direction.FORWARD); //Maybe change to reverse in future
-        armVertical.setPower(0);
         // -- Servos --
         armGripper = hwMap.get(Servo.class, "armServoMotor");
         baseplatePuller0 = hwMap.get(Servo.class, "baseplatePuller0");
@@ -121,6 +120,7 @@ public class ScotBot {
         rightFront.setMode(DcMotor.RunMode.RUN_USING_ENCODER); //I was only using it because I copied it from the example, thanks for letting me know so I could fix it
         leftBack.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         rightBack.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        armVertical.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
         // Define and initialize ALL installed servos.
         baseplatePuller0.setPosition(.5);
@@ -130,6 +130,24 @@ public class ScotBot {
             phoneRotator = hwMap.get(Servo.class, "phoneservo");
             phoneRotator.setPosition(PHONE_SERVO_START);
         }
+    }
+
+    public void calibrateArm(){
+        boolean armButton = true;//Prevent errors until arm button is added (if at all)
+        while(armButton == false) {
+            armVertical.setPower(0.2);
+        }
+        armVertical.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+    }
+
+    public void armToPosition(int position){
+        armVertical.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        armVertical.setTargetPosition(position);
+        while (opmode.opModeIsActive() && (encoderTimeoutTimer.seconds() < ENCODER_TIMEOUT) && armVertical.isBusy()) {
+            telemetry.addData("Arm Target:", position);
+            telemetry.addData("Arm Current:", armVertical.getCurrentPosition());
+        }
+        armVertical.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
     }
 
     //x,y: direction to move from -1,-1 to 1,1

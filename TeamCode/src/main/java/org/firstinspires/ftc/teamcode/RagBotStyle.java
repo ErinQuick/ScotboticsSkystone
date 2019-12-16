@@ -104,6 +104,7 @@ public class RagBotStyle extends LinearOpMode {
                 robot.baseplatePuller0.setPosition(robot.BASEPLATE_PULLER_0_DOWN);
                 robot.baseplatePuller1.setPosition(robot.BASEPLATE_PULLER_1_DOWN);
             }
+            //1 is closed
             if(currentGamepad.right_bumper){
                 robot.armGripper.setPosition(0.5);
             } else if(currentGamepad.left_bumper){
