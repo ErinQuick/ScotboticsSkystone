@@ -385,10 +385,19 @@ public class ScotBot {
        if (degrees < 0) {
           while (opmode.opModeIsActive() && getIMUAngle() == 0) {} //turn off 0
 
-          while (opmode.opModeIsActive() && getIMUAngle() > degrees) {} //continue turning
+          while (opmode.opModeIsActive() && getIMUAngle() > degrees) {
+             telemetry.addData("current rotation (angle > degrees): ", getIMUAngle());
+             telemetry.addData("target: ", degrees);
+             telemetry.update();
+          } //continue turning
        }else {
-          while (opmode.opModeIsActive() && getIMUAngle() < degrees) {}
+          while (opmode.opModeIsActive() && getIMUAngle() < degrees) {
+             telemetry.addData("current rotation: ", getIMUAngle());
+             telemetry.addData("target: ", degrees);
+             telemetry.update();
+          }
        }
+
 
        mecanumDrive(0.0,0.0,0.0); //stop
 

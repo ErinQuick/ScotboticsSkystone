@@ -48,7 +48,7 @@ public class TestIMU extends LinearOpMode {
     public void runOpMode() {
 
         robot = new ScotBot(hardwareMap, telemetry, this);
-        v = new VuforiaNav(robot);
+        // v = new VuforiaNav(robot);
 
         // Send telemetry message to signify robot waiting;
         telemetry.addLine("Press start to rotate 180 degrees");    //
