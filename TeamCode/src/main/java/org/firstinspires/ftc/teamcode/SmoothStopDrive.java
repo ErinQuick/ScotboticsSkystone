@@ -58,7 +58,8 @@ public class SmoothStopDrive extends LinearOpMode {
    double arm;
    
    private static final int EXPONENT = 3;
-   private static final double SMOOTH_STOP_MULTIPLIER = 0.8; //multiplier for smooth stop, lower = smoother
+   private static final double SMOOTH_STOP_MULTIPLIER = 0.8; //multiplier for how much to get
+   // back for smooth stop, higher = smoother
 
    @Override
    public void runOpMode() {
@@ -107,18 +108,18 @@ public class SmoothStopDrive extends LinearOpMode {
          turn = Math.pow(currentGamepad.left_stick_x, EXPONENT);
          arm = Math.pow(currentGamepad.left_stick_y, EXPONENT);
 
-         if (driveX < oldX) {
+         if (Math.abs(driveX) < Math.abs(oldX)) {
             double diff = driveX - oldX;
             diff *= SMOOTH_STOP_MULTIPLIER;
 
             driveX += diff;
          }
 
-         if (driveY < oldY) {
+         if (Math.abs(driveY) < Math.abs(oldY)) {
             double diff = driveY - oldY;
             diff *= SMOOTH_STOP_MULTIPLIER;
 
-            driveY += diff;
+            driveY -= diff;
          }
 
          robot.mecanumDrive(driveX, driveY, turn);
