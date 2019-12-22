@@ -55,11 +55,10 @@ public class SmoothStopDrive extends LinearOpMode {
    double driveX;
    double driveY;
    double turn;
-   double arm;
+   double armTarget = 0.0;
    
    private static final int EXPONENT = 3;
-   private static final double SMOOTH_STOP_MULTIPLIER = 0.8; //multiplier for how much to get
-   // back for smooth stop, higher = smoother
+   private static final double SMOOTH_STOP_MULTIPLIER = 0.8; //multiplier for smooth stop, lower = smoother
 
    @Override
    public void runOpMode() {
@@ -79,6 +78,7 @@ public class SmoothStopDrive extends LinearOpMode {
       // Press Y for Bag-Pipes.;
       telemetry.update();
       firstPress = true;
+      robot.armVertical.setMode(DcMotor.RunMode.RUN_TO_POSITION); //run arm to specific position
       // run until the end of the match (driver presses STOP)
       while (opModeIsActive()) {
          if (currentGamepad.back) {
@@ -106,35 +106,36 @@ public class SmoothStopDrive extends LinearOpMode {
          driveX = Math.pow(currentGamepad.right_stick_x, EXPONENT);
          driveY = Math.pow(currentGamepad.right_stick_y, EXPONENT);
          turn = Math.pow(currentGamepad.left_stick_x, EXPONENT);
-         arm = Math.pow(currentGamepad.left_stick_y, EXPONENT);
 
-         if (Math.abs(driveX) < Math.abs(oldX)) {
+         armTarget += currentGamepad.left_stick_y * ARM_TELEOP_SPEED;
+
+         if (driveX < oldX) {
             double diff = driveX - oldX;
             diff *= SMOOTH_STOP_MULTIPLIER;
 
             driveX += diff;
          }
 
-         if (Math.abs(driveY) < Math.abs(oldY)) {
+         if (driveY < oldY) {
             double diff = driveY - oldY;
             diff *= SMOOTH_STOP_MULTIPLIER;
 
-            driveY -= diff;
+            driveY += diff;
          }
 
          robot.mecanumDrive(driveX, driveY, turn);
 
-         robot.armVertical.setPower(arm);
+         robot.armVertical.setPower(ARM_POWER);
+         robot.armVertical.setTargetPosition(armTarget);
 
-         if (currentGamepad.dpad_up) {
-            robot.baseplatePuller.setPosition(ScotBot.FOUNDATION_SERVO_UP); // This was previosly
-            // just 0.5, which is very unclear. It is now a constant and anything that means
-            // a
-            // certain thing that might be used multiple times should be too, but I'm not
-            // going to do the other ones for you since I don't need to use them. - Charlie
-         } else if (currentGamepad.dpad_down) {
-            robot.baseplatePuller.setPosition(ScotBot.FOUNDATION_SERVO_DOWN);
+         if(currentGamepad.dpad_up){
+            robot.baseplatePuller0.setPosition(robot.BASEPLATE_PULLER_0_UP);
+            robot.baseplatePuller1.setPosition(robot.BASEPLATE_PULLER_1_UP);
+         } else if (currentGamepad.dpad_down){
+            robot.baseplatePuller0.setPosition(robot.BASEPLATE_PULLER_0_DOWN);
+            robot.baseplatePuller1.setPosition(robot.BASEPLATE_PULLER_1_DOWN);
          }
+
          if (currentGamepad.right_bumper) {
             robot.armGripper.setPosition(0.5);
          } else if (currentGamepad.left_bumper) {
