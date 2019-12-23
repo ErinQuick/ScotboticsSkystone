@@ -94,9 +94,11 @@ public class RagBotStyle extends LinearOpMode {
             double driveX = Math.pow(currentGamepad.right_stick_x, 3);
             double driveY = Math.pow(currentGamepad.right_stick_y, 3);
             double turn  =  Math.pow(currentGamepad.left_stick_x, 3);
-            double arm = Math.pow(currentGamepad.left_stick_y, 3);
+            double arm = Math.pow(currentGamepad.left_stick_y, 3) * -1;
             robot.mecanumDrive(driveX, driveY, turn);
             robot.armVertical.setPower(arm);
+            telemetry.addData("Servo 1 Position:", robot.baseplatePuller1.getPosition());
+            telemetry.update();
             if(currentGamepad.dpad_up){
                 robot.baseplatePuller0.setPosition(robot.BASEPLATE_PULLER_0_UP);
                 robot.baseplatePuller1.setPosition(robot.BASEPLATE_PULLER_1_UP);

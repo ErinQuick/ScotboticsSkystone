@@ -71,10 +71,10 @@ public class ScotBot {
 
     public static final boolean HARDWARE_TEAM_ADDED_PHONE_SERVO = false;
 
-    public static final double BASEPLATE_PULLER_0_UP = 0.0;
-    public static final double BASEPLATE_PULLER_1_UP = 1.0;
-    public static final double BASEPLATE_PULLER_0_DOWN = 1.0;
-    public static final double BASEPLATE_PULLER_1_DOWN = 0.0;
+    public static final double BASEPLATE_PULLER_0_DOWN = 0.0;
+    public static final double BASEPLATE_PULLER_1_DOWN = 1.0;
+    public static final double BASEPLATE_PULLER_0_UP = 1.0;
+    public static final double BASEPLATE_PULLER_1_UP = 0.0;
 
 
     /* local OpMode members. */
@@ -123,8 +123,8 @@ public class ScotBot {
         armVertical.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
         // Define and initialize ALL installed servos.
-        baseplatePuller0.setPosition(.5);
-        baseplatePuller1.setPosition(.5);
+        baseplatePuller0.setPosition(BASEPLATE_PULLER_0_UP);
+        baseplatePuller1.setPosition(BASEPLATE_PULLER_1_UP);
         armGripper.setPosition(1);
         if (HARDWARE_TEAM_ADDED_PHONE_SERVO) {
             phoneRotator = hwMap.get(Servo.class, "phoneservo");
