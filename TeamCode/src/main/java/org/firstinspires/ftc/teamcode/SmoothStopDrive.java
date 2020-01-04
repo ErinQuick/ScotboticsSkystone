@@ -55,9 +55,9 @@ public class SmoothStopDrive extends LinearOpMode {
    double driveX;
    double driveY;
    double turn;
-   double armTarget = 0.0;
-   
+   int armTarget = 0;
    private static final int EXPONENT = 3;
+
    private static final double SMOOTH_STOP_MULTIPLIER = 0.8; //multiplier for smooth stop, lower = smoother
 
    @Override
@@ -78,6 +78,8 @@ public class SmoothStopDrive extends LinearOpMode {
       // Press Y for Bag-Pipes.;
       telemetry.update();
       firstPress = true;
+      armTarget = robot.armVertical.getCurrentPosition();
+      robot.armVertical.setTargetPosition(armTarget);
       robot.armVertical.setMode(DcMotor.RunMode.RUN_TO_POSITION); //run arm to specific position
       // run until the end of the match (driver presses STOP)
       while (opModeIsActive()) {
@@ -107,7 +109,7 @@ public class SmoothStopDrive extends LinearOpMode {
          driveY = Math.pow(currentGamepad.right_stick_y, EXPONENT);
          turn = Math.pow(currentGamepad.left_stick_x, EXPONENT);
 
-         armTarget += currentGamepad.left_stick_y * ScotBot.ARM_TELEOP_SPEED;
+         armTarget += (int)(currentGamepad.left_stick_y * ScotBot.ARM_TELEOP_SPEED);
 
          if (driveX < oldX) {
             double diff = driveX - oldX;
@@ -126,7 +128,7 @@ public class SmoothStopDrive extends LinearOpMode {
          robot.mecanumDrive(driveX, driveY, turn);
 
          robot.armVertical.setPower(ScotBot.ARM_POWER);
-         robot.armVertical.setTargetPosition((int)armTarget);
+         robot.armVertical.setTargetPosition(armTarget);
 
          if(currentGamepad.dpad_up){
             robot.baseplatePuller0.setPosition(robot.BASEPLATE_PULLER_0_UP);

@@ -101,12 +101,6 @@ public class ScotBot {
 
     public static final boolean HARDWARE_TEAM_ADDED_PHONE_SERVO = false;
 
-    public static final double BASEPLATE_PULLER_0_DOWN = 0.0;
-    public static final double BASEPLATE_PULLER_1_DOWN = 1.0;
-    public static final double BASEPLATE_PULLER_0_UP = 1.0;
-    public static final double BASEPLATE_PULLER_1_UP = 0.0;
-
-
     /* local OpMode members. */
     public HardwareMap hwMap = null;
     public LinearOpMode opmode = null;
@@ -331,9 +325,11 @@ public class ScotBot {
        v.moveTo(-1435.15 * m, 1206.5,VuforiaNav.MoveMode.Y_THEN_X, VuforiaNav.VuforiaBackup.ENCODER_DRIVE, 520.75 * m, 0.0, this); //move to center of foundation w/ encoder backup
        // the second number  (^) is the vertical position of the foundation, it is currently trying to put the center of the this 9 in from the edge
        // but this should be changed as needed and the robot should start in the right position as a backup.
-       baseplatePuller.setPosition(FOUNDATION_SERVO_DOWN);
+       baseplatePuller0.setPosition(BASEPLATE_PULLER_0_DOWN);
+       baseplatePuller1.setPosition(BASEPLATE_PULLER_1_DOWN);
        v.moveTo(-1600.2, 1206.5, VuforiaNav.MoveMode.X_THEN_Y, VuforiaNav.VuforiaBackup.ENCODER_DRIVE, -1206.55 * m, 0.0, this); // move back to starting position
-       baseplatePuller.setPosition(FOUNDATION_SERVO_UP);
+       baseplatePuller0.setPosition(BASEPLATE_PULLER_0_UP);
+       baseplatePuller1.setPosition(BASEPLATE_PULLER_1_UP);
        mecanumEncoderDrive(1143.8 * m, 0.0, 0.0, AUTO_SPEED); //move back to poster visible
        v.moveTo(-1578.8, 1828.8, VuforiaNav.MoveMode.X_THEN_Y,VuforiaNav.VuforiaBackup.ENCODER_DRIVE, -650.0 * m, 622.3, this); //move back under bridge
     }
@@ -341,8 +337,11 @@ public class ScotBot {
     public void repositionDragFoundation(boolean isRedSide, VuforiaNav v) { //This assumes it is behind the foundation and just drives forward to grab it.
        double m = isRedSide ? -1.0 : 1.0;
        mecanumEncoderDrive(0.0, 750.0, 0.0, AUTO_SPEED); //drive to foundation
-       baseplatePuller.setPosition(FOUNDATION_SERVO_DOWN); //grab foundation
+       baseplatePuller0.setPosition(BASEPLATE_PULLER_0_DOWN); //grab foundation
+       baseplatePuller1.setPosition(BASEPLATE_PULLER_1_DOWN); //grab foundation
        mecanumEncoderDrive(0.0, -770.0, 0.0, FOUNDATION_PULL_SPEED); //drive back sloooowly
+       baseplatePuller0.setPosition(BASEPLATE_PULLER_0_UP); //let go of foundation
+       baseplatePuller1.setPosition(BASEPLATE_PULLER_1_UP);
        mecanumEncoderDrive(1289.05, 0.0, 0.0, AUTO_SPEED); //go under bridge
     }
 

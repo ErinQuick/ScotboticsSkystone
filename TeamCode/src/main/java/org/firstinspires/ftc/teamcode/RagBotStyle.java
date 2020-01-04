@@ -33,6 +33,7 @@ import com.qualcomm.ftccommon.SoundPlayer;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.Gamepad;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 
 import java.io.File;
 
@@ -40,7 +41,7 @@ import java.io.File;
 /**
  * 
  */
-
+@Disabled
 @TeleOp(name="RagBot Style (Non - Smooth)", group="Scotbotics")
 
 public class RagBotStyle extends LinearOpMode {
