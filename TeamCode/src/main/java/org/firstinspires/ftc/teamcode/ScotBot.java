@@ -31,14 +31,22 @@
 
 package org.firstinspires.ftc.teamcode;
 
+import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
+import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import org.firstinspires.ftc.robotcore.external.Telemetry;
+import org.firstinspires.ftc.robotcore.external.tfod.Recognition;
+import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
+import org.firstinspires.ftc.robotcore.external.navigation.AxesOrder;
+import org.firstinspires.ftc.robotcore.external.navigation.AxesReference;
+import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
+import java.util.List;
 
 /**
  * This is NOT an opmode. This is a class for the robot.
@@ -58,16 +66,38 @@ public class ScotBot {
     public Servo baseplatePuller0;
     public Servo baseplatePuller1;
 
+    public BNO055IMU imu;
+
+    Orientation lastAngles = new Orientation();
+    double globalAngle, power = .30, correction;
+
     public static final double COUNTS_PER_MM = 6.518225; // don't tell Mr. Savage this has too many significant figures
-    public static final double MECANUM_SIDE_MULTIPLIER = 2.0;
+    public static final double MECANUM_SIDE_MULTIPLIER = 2.0; //is this right? I thought mecanum was working but this looks wrong
+
+    public static final double TURN_SPEED = 0.6;
+    public static final double AUTO_SPEED = 0.5;
+    public static final double ARM_TELEOP_SPEED = 100.0;
+    public static final double ARM_POWER = 0.8;
+    public static final double FOUNDATION_PULL_SPEED = 0.3;
+
+    public static final double BASEPLATE_PULLER_0_DOWN = 0.0;
+    public static final double BASEPLATE_PULLER_1_DOWN = 1.0;
+    public static final double BASEPLATE_PULLER_0_UP = 1.0;
+    public static final double BASEPLATE_PULLER_1_UP = 0.0;
 
     private ElapsedTime encoderTimeoutTimer = new ElapsedTime();
     public static final double ENCODER_TIMEOUT = 10.0;
+
+    public static final double FOUNDATION_SERVO_INIT = 0.0;
+    public static final double FOUNDATION_SERVO_UP = 0.0;
+    public static final double FOUNDATION_SERVO_DOWN = 0.5;
 
     public static final double MIN_SERVO = 0.0;
     public static final double MAX_SERVO = 1.0;
     public static final double SERVO_DEGREES = 360.0;
     public static final double PHONE_SERVO_START = 0.5;
+
+    public static final double LEGO_CENTER_OFFSET = 400.0;
 
     public static final boolean HARDWARE_TEAM_ADDED_PHONE_SERVO = false;
 
@@ -130,6 +160,20 @@ public class ScotBot {
             phoneRotator = hwMap.get(Servo.class, "phoneservo");
             phoneRotator.setPosition(PHONE_SERVO_START);
         }
+
+        BNO055IMU.Parameters parameters = new BNO055IMU.Parameters();
+        parameters.mode = BNO055IMU.SensorMode.IMU;
+        parameters.angleUnit = BNO055IMU.AngleUnit.DEGREES;
+        parameters.accelUnit = BNO055IMU.AccelUnit.METERS_PERSEC_PERSEC;
+        parameters.loggingEnabled = false;
+
+        imu = ahwMap.get(BNO055IMU.class, "imu");
+        imu.initialize(parameters);
+
+        while (!mainopmode.isStopRequested() && !imu.isGyroCalibrated()) {
+           mainopmode.sleep(50);
+           mainopmode.idle();
+        }
     }
 
     public void calibrateArm(){
@@ -152,7 +196,7 @@ public class ScotBot {
 
     //x,y: direction to move from -1,-1 to 1,1
     //turn: direction to turn from -1 to 1
-    public void mecanumDrive(double x, double y, double turn) {
+    public void mecanumDrive(double x, double y, double turn, boolean correctTurn) {
         x *= -1; //it is reversed for some reason
         double angle = getAngle(x, y);
 
@@ -160,6 +204,10 @@ public class ScotBot {
         speed *= Math.sqrt(2);//The comment above sounds really stupid but it actually kind of works, this line speeds it up.
         //If something tries to use this for a speed that is outside of the circle of the joystick, this will make the motor speeds
         //above their maximum, but if it is only for driving this is OK.
+
+        if (Math.abs(turn) < 0.05 && correctTurn) {
+           turn += getCorrectionAngle();
+        }
 
         double flSpeed = speed * Math.sin(angle + Math.PI / 4) + turn;
         double brSpeed = speed * Math.sin(angle + Math.PI / 4) - turn;
@@ -173,8 +221,12 @@ public class ScotBot {
 
     }
 
+    public void mecanumDrive(double x, double y, double turn) {
+       mecanumDrive(x,y,turn,false);
+    }
+
     //Drive to relative coordinates in millimeters
-    public void mecanumEncoderDrive(double x, double y, double turn, double speed, ScotBot robot) {
+    public void mecanumEncoderDrive(double x, double y, double turn, double speed) {
 
        int flTarget;
        int brTarget;
@@ -197,76 +249,232 @@ public class ScotBot {
         double blMultiplier = (distance * Math.sin(angle + Math.PI / 4) + turn); //Distance for each wheel to turn
 
         double totalDistance = Math.sqrt(Math.pow(x, 2) + Math.pow(y, 2));
-        robot.telemetry.addData("Angle: ", angle);
-        robot.telemetry.addData("Total Distance: ", totalDistance);
-        robot.telemetry.update();
+        telemetry.addData("Angle: ", angle);
+        telemetry.addData("Total Distance: ", totalDistance);
+        telemetry.update();
 
-        if (robot.opmode.opModeIsActive()) {
+        if (opmode.opModeIsActive()) {
 
-            robot.leftFront.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-            robot.rightBack.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-            robot.leftBack.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-            robot.rightFront.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+            leftFront.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+            rightBack.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+            leftBack.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+            rightFront.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
 
-            flTarget = (robot.leftFront.getCurrentPosition() + (int) (flMultiplier * COUNTS_PER_MM * totalDistance)) * -1;
-            brTarget = (robot.rightBack.getCurrentPosition() + (int) (brMultiplier * COUNTS_PER_MM * totalDistance)) * -1;
-            frTarget = (robot.rightFront.getCurrentPosition() + (int) (frMultiplier * COUNTS_PER_MM * totalDistance)) * -1;
-            blTarget = (robot.leftBack.getCurrentPosition() + (int) (blMultiplier * COUNTS_PER_MM * totalDistance)) * -1;
+            flTarget = (leftFront.getCurrentPosition() + (int) (flMultiplier * COUNTS_PER_MM * totalDistance)) * -1;
+            brTarget = (rightBack.getCurrentPosition() + (int) (brMultiplier * COUNTS_PER_MM * totalDistance)) * -1;
+            frTarget = (rightFront.getCurrentPosition() + (int) (frMultiplier * COUNTS_PER_MM * totalDistance)) * -1;
+            blTarget = (leftBack.getCurrentPosition() + (int) (blMultiplier * COUNTS_PER_MM * totalDistance)) * -1;
 
-            robot.leftFront.setTargetPosition(flTarget);
-            robot.rightBack.setTargetPosition(brTarget);
-            robot.rightFront.setTargetPosition(frTarget);
-            robot.leftBack.setTargetPosition(blTarget);
+            leftFront.setTargetPosition(flTarget);
+            rightBack.setTargetPosition(brTarget);
+            rightFront.setTargetPosition(frTarget);
+            leftBack.setTargetPosition(blTarget);
 
             // Turn On RUN_TO_POSITION
             //
-            robot.leftFront.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+            leftFront.setMode(DcMotor.RunMode.RUN_TO_POSITION);
             //
-            robot.rightBack.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+            rightBack.setMode(DcMotor.RunMode.RUN_TO_POSITION);
             //
-            robot.leftBack.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+            leftBack.setMode(DcMotor.RunMode.RUN_TO_POSITION);
             //
-            robot.rightFront.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+            rightFront.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
             encoderTimeoutTimer.reset();
 
-            robot.leftFront.setPower(speed * flMultiplier);
-            robot.rightBack.setPower(speed * brMultiplier);
-            robot.rightFront.setPower(speed * frMultiplier);
-            robot.leftBack.setPower(speed * blMultiplier);
+            leftFront.setPower(speed * flMultiplier);
+            rightBack.setPower(speed * brMultiplier);
+            rightFront.setPower(speed * frMultiplier);
+            leftBack.setPower(speed * blMultiplier);
 
-            while (robot.opmode.opModeIsActive() &&
+            while (opmode.opModeIsActive() &&
                     (encoderTimeoutTimer.seconds() < ENCODER_TIMEOUT) &&
-                    (robot.rightFront.isBusy() && robot.rightBack.isBusy() && robot.leftBack.isBusy() && robot.leftFront.isBusy())) {
+                    (rightFront.isBusy() && rightBack.isBusy() && leftBack.isBusy() && leftFront.isBusy())) {
 
                 // Display it for the driver.
-               // robot.telemetry.addData("Target: ", "Running to %7d,%7d,%7d,%7d", flTarget, brTarget, frTarget, blTarget);
-               // robot.telemetry.addData("Current: ", "Running at %7d,%7d,%7d,%7d",
-               //         robot.leftFront.getCurrentPosition(),
-               //         robot.rightBack.getCurrentPosition(),
-               //         robot.rightFront.getCurrentPosition(),
-               //         robot.leftBack.getCurrentPosition());
-               // robot.telemetry.addData("targetPos: ", "Going To: %7f, %7f, and turning %7f", x, y, turn);
-               // robot.telemetry.update();
+               // telemetry.addData("Target: ", "Running to %7d,%7d,%7d,%7d", flTarget, brTarget, frTarget, blTarget);
+               // telemetry.addData("Current: ", "Running at %7d,%7d,%7d,%7d",
+               //         leftFront.getCurrentPosition(),
+               //         rightBack.getCurrentPosition(),
+               //         rightFront.getCurrentPosition(),
+               //         leftBack.getCurrentPosition());
+               // telemetry.addData("targetPos: ", "Going To: %7f, %7f, and turning %7f", x, y, turn);
+               // telemetry.update();
             }
 
             // Stop all motion;
-            robot.leftFront.setPower(0);
-            robot.rightFront.setPower(0);
-            robot.leftBack.setPower(0);
-            robot.rightBack.setPower(0);
+            leftFront.setPower(0);
+            rightFront.setPower(0);
+            leftBack.setPower(0);
+            rightBack.setPower(0);
 
             
             // Turn off RUN_TO_POSITION
-            robot.leftFront.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-            robot.rightBack.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-            robot.leftBack.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-            robot.rightFront.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+            leftFront.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+            rightBack.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+            leftBack.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+            rightFront.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
         }
     }
 
     public static double getAngle(double x, double y) {
         return (1.5 * Math.PI - Math.atan2(y, x));
+    }
+    //Reposition the foundation for autonomous. This is basically the entire foundation-side autonomous.
+    //It is here and not in the autonomous program because it can be used twice, once for each side,
+    //with the only difference being the horizontal direction.
+    public void repositionFoundation(boolean isRedSide, VuforiaNav v) {
+       double m = isRedSide ? -1.0 : 1.0; //multiplier for horizontal movement, short name because it is
+       //used often... negative to move left on right side, positive to move right from blue left side
+       mecanumEncoderDrive(685.8 * m, 0.0, 0.0, AUTO_SPEED); // move with encoders to be able to see a poster
+       v.moveTo(-1435.15 * m, 1206.5,VuforiaNav.MoveMode.Y_THEN_X, VuforiaNav.VuforiaBackup.ENCODER_DRIVE, 520.75 * m, 0.0, this); //move to center of foundation w/ encoder backup
+       // the second number  (^) is the vertical position of the foundation, it is currently trying to put the center of the this 9 in from the edge
+       // but this should be changed as needed and the robot should start in the right position as a backup.
+       baseplatePuller.setPosition(FOUNDATION_SERVO_DOWN);
+       v.moveTo(-1600.2, 1206.5, VuforiaNav.MoveMode.X_THEN_Y, VuforiaNav.VuforiaBackup.ENCODER_DRIVE, -1206.55 * m, 0.0, this); // move back to starting position
+       baseplatePuller.setPosition(FOUNDATION_SERVO_UP);
+       mecanumEncoderDrive(1143.8 * m, 0.0, 0.0, AUTO_SPEED); //move back to poster visible
+       v.moveTo(-1578.8, 1828.8, VuforiaNav.MoveMode.X_THEN_Y,VuforiaNav.VuforiaBackup.ENCODER_DRIVE, -650.0 * m, 622.3, this); //move back under bridge
+    }
+
+    public void repositionDragFoundation(boolean isRedSide, VuforiaNav v) { //This assumes it is behind the foundation and just drives forward to grab it.
+       double m = isRedSide ? -1.0 : 1.0;
+       mecanumEncoderDrive(0.0, 750.0, 0.0, AUTO_SPEED); //drive to foundation
+       baseplatePuller.setPosition(FOUNDATION_SERVO_DOWN); //grab foundation
+       mecanumEncoderDrive(0.0, -770.0, 0.0, FOUNDATION_PULL_SPEED); //drive back sloooowly
+       mecanumEncoderDrive(1289.05, 0.0, 0.0, AUTO_SPEED); //go under bridge
+    }
+
+    public void deliverSkystones(boolean isRedSide, VuforiaNav v) {
+       double m = isRedSide ? -1.0 : 1.0;
+       mecanumEncoderDrive(0.0, 762.0, 0.0, AUTO_SPEED); //drive in front of skystones
+       goToSkystone(v); //drive in front of one skystone
+       mecanumEncoderDrive(0.0, 304.0, 0.0, AUTO_SPEED); //drive forwards into the skystone
+       //TODO: lower arm and close
+       mecanumEncoderDrive(0.0, -950.0, 0.0, AUTO_SPEED); //drive back
+       IMUTurn(-90 * (int)m, TURN_SPEED);
+       mecanumEncoderDrive(0.0, 2757.0, 0.0, AUTO_SPEED); //drive to foundation
+       //TODO: release skystone
+       mecanumEncoderDrive(680.0 * m, 0.0, 0.0, AUTO_SPEED); //go to where poster is visible
+       v.moveTo(-914.4 * m, -950.0, VuforiaNav.MoveMode.X_THEN_Y, VuforiaNav.VuforiaBackup.ENCODER_DRIVE, 0.0, -2750.0, this); //move back to legos
+       IMUTurn(90 * (int)m, TURN_SPEED);
+       goToSkystone(v);
+       mecanumEncoderDrive(0.0, 304.0, 0.0, AUTO_SPEED); //drive forwards into the skystone
+       //TODO: lower arm and close
+       mecanumEncoderDrive(0.0, -950.0, 0.0, AUTO_SPEED); //drive back
+       IMUTurn(-90 * (int)m, TURN_SPEED);
+       mecanumEncoderDrive(0.0, 2757.0, 0.0, AUTO_SPEED); //drive to foundation
+       //TODO: release skystone
+       mecanumEncoderDrive(680.0 * m, 0.0, 0.0, AUTO_SPEED); //go to where poster is visible
+       v.moveTo(-900.6 * m, 1828.8, VuforiaNav.MoveMode.X_THEN_Y, VuforiaNav.VuforiaBackup.ENCODER_DRIVE, 0.0, -850.9, this); //move back under bridge
+    }
+
+    public void resetIMUAngle() { //reset the angle of the IMU to the current angle. Bind to a button if using POV controls.
+       lastAngles = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
+
+       globalAngle = 0;
+    }
+
+    public double getCorrectionAngle() { //get amount to correct movement to drive straight using IMU
+       double correction, angle, gain = 0.10; //gain = how much to correct
+
+       angle = getIMUAngle();
+
+       if (angle == 0) {
+          correction = 0;
+       }else {
+          correction = -angle;
+       }
+
+       correction *= gain;
+       return correction;
+    }
+
+    public double getIMUAngle() { //get current angle of robot using IMU
+       Orientation angles = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYZ, AngleUnit.DEGREES);
+       double deltaAngle = angles.firstAngle - lastAngles.firstAngle;
+
+       if (deltaAngle < -180) {
+          deltaAngle += 360;
+       }else if (deltaAngle > 180) {
+          deltaAngle -= 360;
+       }
+
+       globalAngle += deltaAngle;
+
+       lastAngles = angles;
+       telemetry.addData("Delta Angle: ", deltaAngle);
+       telemetry.addData("Current Global Angle: ", globalAngle);
+       telemetry.addData("Current angle from angles: ", angles.firstAngle);
+       telemetry.update();
+
+       return globalAngle;
+    }
+    public void IMUTurn(int degrees, double power) {
+       resetIMUAngle();
+
+       if (degrees < 0) {
+          mecanumDrive(0,0,TURN_SPEED); //turn right
+       }else if (degrees > 0) {
+          mecanumDrive(0,0,-TURN_SPEED); //turn left
+       }
+       else {return;} //direction is perfect
+
+       if (degrees < 0) {
+          while (opmode.opModeIsActive() && getIMUAngle() == 0) {} //turn off 0
+
+          while (opmode.opModeIsActive() && getIMUAngle() > degrees) {
+          } //continue turning
+       }else {
+          while (opmode.opModeIsActive() && getIMUAngle() < degrees) {
+          }
+       }
+
+
+       mecanumDrive(0.0,0.0,0.0); //stop
+
+       opmode.sleep(300); //wait for stop
+
+       resetIMUAngle();
+    }
+
+    public void goToSkystone(VuforiaNav v) {
+       List<Recognition> legos = v.getLegos(this);
+       ElapsedTime legoTimer = new ElapsedTime(); //stop if it is running too long
+       ElapsedTime visibleTimer = new ElapsedTime(); //change direction if nothing visible for a while
+       double legoOffset = 0.0;
+       boolean inFrontOfLego = false;
+       double speed = 0.3;
+       visibleTimer.reset();
+       legoTimer.reset();
+       while (!inFrontOfLego) {
+          for (Recognition lego : legos) {
+             if (lego.getLabel().equals("Skystone")) {
+                telemetry.addLine("Found Skystone");
+                double oldOffset = legoOffset;
+                legoOffset = (lego.getLeft() - lego.getRight()) - LEGO_CENTER_OFFSET; 
+                // if (oldOffset != null && legoOffset != null) { //if there is a null error we might need this check,
+                // but doubles cant be null so we need to check a different way
+                   if ((oldOffset - legoOffset) > 0) {
+                      speed = Math.min((oldOffset - legoOffset) / 100.0, 0.5);
+                   }else {
+                      speed = Math.max((oldOffset - legoOffset) / 100.0, -0.5); // set speed to go to lego
+                      //but not faster than 0.5, change the 100.0 to change how much it slows down
+                   }
+                // }
+                visibleTimer.reset();
+                break;
+             }
+          }
+          if (legoTimer.seconds() > 5.0) {
+             break; //stop after timer
+          }
+          if (visibleTimer.seconds() > 2.0) {
+             speed = speed > 0 ? -0.3 : 0.3; //switch direction if not visible
+          }
+          mecanumDrive(speed,0.0,0.0);
+       }
+       mecanumDrive(0.0,0.0,0.0);
     }
 }
