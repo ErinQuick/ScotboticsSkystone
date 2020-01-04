@@ -75,7 +75,14 @@ public class ScotBot {
 
     public static final double TURN_SPEED = 0.6;
     public static final double AUTO_SPEED = 0.5;
+    public static final double ARM_TELEOP_SPEED = 100.0;
+    public static final double ARM_POWER = 0.8;
     public static final double FOUNDATION_PULL_SPEED = 0.3;
+
+    public static final double BASEPLATE_PULLER_0_DOWN = 0.0;
+    public static final double BASEPLATE_PULLER_1_DOWN = 1.0;
+    public static final double BASEPLATE_PULLER_0_UP = 1.0;
+    public static final double BASEPLATE_PULLER_1_UP = 0.0;
 
     private ElapsedTime encoderTimeoutTimer = new ElapsedTime();
     public static final double ENCODER_TIMEOUT = 10.0;

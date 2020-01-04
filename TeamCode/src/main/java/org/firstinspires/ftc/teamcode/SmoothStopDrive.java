@@ -33,7 +33,7 @@ import com.qualcomm.ftccommon.SoundPlayer;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.Gamepad;
-
+import com.qualcomm.robotcore.hardware.DcMotor;
 import java.io.File;
 
 /**
@@ -107,7 +107,7 @@ public class SmoothStopDrive extends LinearOpMode {
          driveY = Math.pow(currentGamepad.right_stick_y, EXPONENT);
          turn = Math.pow(currentGamepad.left_stick_x, EXPONENT);
 
-         armTarget += currentGamepad.left_stick_y * ARM_TELEOP_SPEED;
+         armTarget += currentGamepad.left_stick_y * ScotBot.ARM_TELEOP_SPEED;
 
          if (driveX < oldX) {
             double diff = driveX - oldX;
@@ -125,8 +125,8 @@ public class SmoothStopDrive extends LinearOpMode {
 
          robot.mecanumDrive(driveX, driveY, turn);
 
-         robot.armVertical.setPower(ARM_POWER);
-         robot.armVertical.setTargetPosition(armTarget);
+         robot.armVertical.setPower(ScotBot.ARM_POWER);
+         robot.armVertical.setTargetPosition((int)armTarget);
 
          if(currentGamepad.dpad_up){
             robot.baseplatePuller0.setPosition(robot.BASEPLATE_PULLER_0_UP);
