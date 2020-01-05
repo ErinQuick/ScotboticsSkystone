@@ -90,22 +90,22 @@ public class VuforiaNav {
 
     // Since ImageTarget trackables use mm to specifiy their dimensions, we must use mm for all the physical dimension.
     // We will define some constants and conversions here
-    private static final float mmPerInch        = 25.4f;
-    private static final float mmTargetHeight   = (6) * mmPerInch;          // the height of the center of the target image above the floor
+    private static final float MM_PER_INCH        = 25.4f;
+    private static final float MM_TARGET_HEIGHT   = (6) * MM_PER_INCH;          // the height of the center of the target image above the floor
 
     // Constant for Stone Target
-    private static final float stoneZ = 2.00f * mmPerInch;
+    private static final float stoneZ = 2.00f * MM_PER_INCH;
 
     // Constants for the center support targets
-    private static final float bridgeZ = 6.42f * mmPerInch;
-    private static final float bridgeY = 23 * mmPerInch;
-    private static final float bridgeX = 5.18f * mmPerInch;
+    private static final float bridgeZ = 6.42f * MM_PER_INCH;
+    private static final float bridgeY = 23 * MM_PER_INCH;
+    private static final float bridgeX = 5.18f * MM_PER_INCH;
     private static final float bridgeRotY = 59;                                 // Units are degrees
     private static final float bridgeRotZ = 180;
 
     // Constants for perimeter targets
-    private static final float halfField = 72 * mmPerInch;
-    private static final float quadField  = 36 * mmPerInch;
+    private static final float halfField = 72 * MM_PER_INCH;
+    private static final float quadField  = 36 * MM_PER_INCH;
 
     // Class Members
     private OpenGLMatrix lastLocation = null;
@@ -121,9 +121,9 @@ public class VuforiaNav {
     public static final double MECANUM_MOVE_TO_SPEED = 0.5;
     public ElapsedTime servoTimer;
 
-    final float CAMERA_FORWARD_DISPLACEMENT  = 4.0f * mmPerInch;   // eg: Camera is 4 Inches in front of robot center
-    final float CAMERA_VERTICAL_DISPLACEMENT = 8.0f * mmPerInch;   // eg: Camera is 8 Inches above ground
-    final float CAMERA_LEFT_DISPLACEMENT     = 0;     // eg: Camera is ON the robot's center line
+    final float CAMERA_FORWARD_DISPLACEMENT  = 5.5f * MM_PER_INCH;   // eg: Camera is 4 Inches in front of robot center
+    final float CAMERA_VERTICAL_DISPLACEMENT = 10.0f * MM_PER_INCH;   // eg: Camera is 8 Inches above ground
+    final float CAMERA_LEFT_DISPLACEMENT     = -4.0f * MM_PER_INCH;     // eg: Camera is ON the robot's center line
 
     private VuforiaLocalizer.Parameters parameters;
 
@@ -253,35 +253,35 @@ public class VuforiaNav {
 
         //Set the position of the perimeter targets with relation to origin (center of field)
         red1.setLocation(OpenGLMatrix
-                .translation(quadField, -halfField, mmTargetHeight)
+                .translation(quadField, -halfField, MM_TARGET_HEIGHT)
                 .multiplied(Orientation.getRotationMatrix(EXTRINSIC, XYZ, DEGREES, 90, 0, 180)));
 
         red2.setLocation(OpenGLMatrix
-                .translation(-quadField, -halfField, mmTargetHeight)
+                .translation(-quadField, -halfField, MM_TARGET_HEIGHT)
                 .multiplied(Orientation.getRotationMatrix(EXTRINSIC, XYZ, DEGREES, 90, 0, 180)));
 
         front1.setLocation(OpenGLMatrix
-                .translation(-halfField, -quadField, mmTargetHeight)
+                .translation(-halfField, -quadField, MM_TARGET_HEIGHT)
                 .multiplied(Orientation.getRotationMatrix(EXTRINSIC, XYZ, DEGREES, 90, 0, 90)));
 
         front2.setLocation(OpenGLMatrix
-                .translation(-halfField, quadField, mmTargetHeight)
+                .translation(-halfField, quadField, MM_TARGET_HEIGHT)
                 .multiplied(Orientation.getRotationMatrix(EXTRINSIC, XYZ, DEGREES, 90, 0, 90)));
 
         blue1.setLocation(OpenGLMatrix
-                .translation(-quadField, halfField, mmTargetHeight)
+                .translation(-quadField, halfField, MM_TARGET_HEIGHT)
                 .multiplied(Orientation.getRotationMatrix(EXTRINSIC, XYZ, DEGREES, 90, 0, 0)));
 
         blue2.setLocation(OpenGLMatrix
-                .translation(quadField, halfField, mmTargetHeight)
+                .translation(quadField, halfField, MM_TARGET_HEIGHT)
                 .multiplied(Orientation.getRotationMatrix(EXTRINSIC, XYZ, DEGREES, 90, 0, 0)));
 
         rear1.setLocation(OpenGLMatrix
-                .translation(halfField, quadField, mmTargetHeight)
+                .translation(halfField, quadField, MM_TARGET_HEIGHT)
                 .multiplied(Orientation.getRotationMatrix(EXTRINSIC, XYZ, DEGREES, 90, 0, -90)));
 
         rear2.setLocation(OpenGLMatrix
-                .translation(halfField, -quadField, mmTargetHeight)
+                .translation(halfField, -quadField, MM_TARGET_HEIGHT)
                 .multiplied(Orientation.getRotationMatrix(EXTRINSIC, XYZ, DEGREES, 90, 0, -90)));
 
         //
@@ -554,7 +554,7 @@ public class VuforiaNav {
             // express position (translation) of robot in inches.
             VectorF translation = lastLocation.getTranslation();
             robot.telemetry.addData("Pos (in)", "{X, Y, Z} = %.1f, %.1f, %.1f",
-                    translation.get(0) / mmPerInch, translation.get(1) / mmPerInch, translation.get(2) / mmPerInch);
+                    translation.get(0) / MM_PER_INCH, translation.get(1) / MM_PER_INCH, translation.get(2) / MM_PER_INCH);
 
             // express the rotation of the robot in degrees.
             Orientation rotation = Orientation.getOrientation(lastLocation, EXTRINSIC, XYZ, DEGREES);
@@ -593,7 +593,7 @@ public class VuforiaNav {
             // express position (translation) of robot in inches.
             VectorF translation = lastLocation.getTranslation();
             robot.telemetry.addData("Pos (in)", "{X, Y, Z} = %.1f, %.1f, %.1f",
-                    translation.get(0) / mmPerInch, translation.get(1) / mmPerInch, translation.get(2) / mmPerInch);
+                    translation.get(0) / MM_PER_INCH, translation.get(1) / MM_PER_INCH, translation.get(2) / MM_PER_INCH);
 
             // express the rotation of the robot in degrees.
             Orientation rotation = Orientation.getOrientation(lastLocation, EXTRINSIC, XYZ, DEGREES);
