@@ -58,7 +58,7 @@ public class SmoothStopDrive extends LinearOpMode {
    int armTarget = 0;
    private static final int EXPONENT = 3;
 
-   private static final double SMOOTH_STOP_MULTIPLIER = 0.8; //multiplier for smooth stop, lower = smoother
+   private static final double SMOOTH_STOP_MULTIPLIER = 0.3; //multiplier for smooth stop, higher = smoother
 
    @Override
    public void runOpMode() {
@@ -115,14 +115,14 @@ public class SmoothStopDrive extends LinearOpMode {
             double diff = driveX - oldX;
             diff *= SMOOTH_STOP_MULTIPLIER;
 
-            driveX += diff;
+            driveX -= diff;
          }
 
          if (driveY < oldY) {
             double diff = driveY - oldY;
             diff *= SMOOTH_STOP_MULTIPLIER;
 
-            driveY += diff;
+            driveY -= diff;
          }
 
          robot.mecanumDrive(driveX, driveY, turn);
@@ -131,19 +131,16 @@ public class SmoothStopDrive extends LinearOpMode {
          robot.armVertical.setTargetPosition(armTarget);
 
          if(currentGamepad.dpad_up){
-            robot.baseplatePuller0.setPosition(robot.BASEPLATE_PULLER_0_UP);
-            robot.baseplatePuller1.setPosition(robot.BASEPLATE_PULLER_1_UP);
+             robot.setPullerUp(true);
          } else if (currentGamepad.dpad_down){
-            robot.baseplatePuller0.setPosition(robot.BASEPLATE_PULLER_0_DOWN);
-            robot.baseplatePuller1.setPosition(robot.BASEPLATE_PULLER_1_DOWN);
+             robot.setPullerUp(false);
          }
 
          if (currentGamepad.right_bumper) {
-            robot.armGripper.setPosition(0.5);
+             robot.setArmOpen(false);
          } else if (currentGamepad.left_bumper) {
-            robot.armGripper.setPosition(1);
+             robot.setArmOpen(true);
          }
-         // robot.armVertical.setPower(arm); //Will be used when arm is added
          // Pace this loop so jaw action is reasonable speed.
          sleep(50);
       }

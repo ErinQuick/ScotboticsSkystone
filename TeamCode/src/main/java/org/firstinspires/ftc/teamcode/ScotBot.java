@@ -71,6 +71,8 @@ public class ScotBot {
     Orientation lastAngles = new Orientation();
     double globalAngle, power = .30, correction;
 
+    public int defaultArmPos;
+
     public static final double COUNTS_PER_MM = 6.518225; // don't tell Mr. Savage this has too many significant figures
     public static final double MECANUM_SIDE_MULTIPLIER = 2.0; //is this right? I thought mecanum was working but this looks wrong
 
@@ -78,6 +80,9 @@ public class ScotBot {
     public static final double AUTO_SPEED = 0.5;
     public static final double ARM_TELEOP_SPEED = 100.0;
     public static final double ARM_POWER = 0.8;
+    public static final int ARM_UP_POS = 100;
+    public static final double ARM_OPEN_POS = 1.0;
+    public static final double ARM_CLOSED_POS = 0.5;
     public static final double FOUNDATION_PULL_SPEED = 0.3;
 
     public static final double BASEPLATE_PULLER_0_DOWN = 0.0;
@@ -87,10 +92,6 @@ public class ScotBot {
 
     private ElapsedTime encoderTimeoutTimer = new ElapsedTime();
     public static final double ENCODER_TIMEOUT = 10.0;
-
-    public static final double FOUNDATION_SERVO_INIT = 0.0;
-    public static final double FOUNDATION_SERVO_UP = 0.0;
-    public static final double FOUNDATION_SERVO_DOWN = 0.5;
 
     public static final double MIN_SERVO = 0.0;
     public static final double MAX_SERVO = 1.0;
@@ -146,6 +147,9 @@ public class ScotBot {
         rightBack.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         armVertical.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
+        //set default arm position
+        defaultArmPos = armVertical.getCurrentPosition();
+
         // Define and initialize ALL installed servos.
         baseplatePuller0.setPosition(BASEPLATE_PULLER_0_UP);
         baseplatePuller1.setPosition(BASEPLATE_PULLER_1_UP);
@@ -170,22 +174,33 @@ public class ScotBot {
         }
     }
 
-    public void calibrateArm(){
-        boolean armButton = true;//Prevent errors until arm button is added (if at all)
-        while(armButton == false) {
-            armVertical.setPower(0.2);
-        }
-        armVertical.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-    }
+    // public void calibrateArm(){
+    //     boolean armButton = true;//Prevent errors until arm button is added (if at all)
+    //     while(armButton == false) {
+    //         armVertical.setPower(0.2);
+    //     }
+    //     armVertical.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+    // }
 
-    public void armToPosition(int position){
+    public void moveArmTo(int position){
+        armVertical.setTargetPosition(position + defaultArmPos);
+        encoderTimeoutTimer.reset();
         armVertical.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        armVertical.setTargetPosition(position);
+        armVertical.setPower(ARM_POWER);
         while (opmode.opModeIsActive() && (encoderTimeoutTimer.seconds() < ENCODER_TIMEOUT) && armVertical.isBusy()) {
-            telemetry.addData("Arm Target:", position);
+            telemetry.addData("Arm Target:", position + defaultArmPos);
             telemetry.addData("Arm Current:", armVertical.getCurrentPosition());
         }
         armVertical.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+    }
+
+    public void setArmOpen(boolean isOpen) {
+        armGripper.setPosition(isOpen ? ARM_OPEN_POS : ARM_CLOSED_POS);
+    }
+
+    public void setPullerUp(boolean isUp) {
+        baseplatePuller0.setPosition(isUp ? BASEPLATE_PULLER_0_UP: BASEPLATE_PULLER_0_DOWN);
+        baseplatePuller1.setPosition(isUp ? BASEPLATE_PULLER_1_UP: BASEPLATE_PULLER_1_DOWN);
     }
 
     //x,y: direction to move from -1,-1 to 1,1
@@ -325,11 +340,9 @@ public class ScotBot {
        v.moveTo(-1435.15 * m, 1206.5,VuforiaNav.MoveMode.Y_THEN_X, VuforiaNav.VuforiaBackup.ENCODER_DRIVE, 520.75 * m, 0.0, this); //move to center of foundation w/ encoder backup
        // the second number  (^) is the vertical position of the foundation, it is currently trying to put the center of the this 9 in from the edge
        // but this should be changed as needed and the robot should start in the right position as a backup.
-       baseplatePuller0.setPosition(BASEPLATE_PULLER_0_DOWN);
-       baseplatePuller1.setPosition(BASEPLATE_PULLER_1_DOWN);
+       setPullerUp(false);
        v.moveTo(-1600.2, 1206.5, VuforiaNav.MoveMode.X_THEN_Y, VuforiaNav.VuforiaBackup.ENCODER_DRIVE, -1206.55 * m, 0.0, this); // move back to starting position
-       baseplatePuller0.setPosition(BASEPLATE_PULLER_0_UP);
-       baseplatePuller1.setPosition(BASEPLATE_PULLER_1_UP);
+       setPullerUp(true);
        mecanumEncoderDrive(1143.8 * m, 0.0, 0.0, AUTO_SPEED); //move back to poster visible
        v.moveTo(-1578.8, 1828.8, VuforiaNav.MoveMode.X_THEN_Y,VuforiaNav.VuforiaBackup.ENCODER_DRIVE, -650.0 * m, 622.3, this); //move back under bridge
     }
@@ -337,34 +350,40 @@ public class ScotBot {
     public void repositionDragFoundation(boolean isRedSide, VuforiaNav v) { //This assumes it is behind the foundation and just drives forward to grab it.
        double m = isRedSide ? -1.0 : 1.0;
        mecanumEncoderDrive(0.0, 750.0, 0.0, AUTO_SPEED); //drive to foundation
-       baseplatePuller0.setPosition(BASEPLATE_PULLER_0_DOWN); //grab foundation
-       baseplatePuller1.setPosition(BASEPLATE_PULLER_1_DOWN); //grab foundation
+       setPullerUp(false);
        mecanumEncoderDrive(0.0, -770.0, 0.0, FOUNDATION_PULL_SPEED); //drive back sloooowly
-       baseplatePuller0.setPosition(BASEPLATE_PULLER_0_UP); //let go of foundation
-       baseplatePuller1.setPosition(BASEPLATE_PULLER_1_UP);
+       setPullerUp(true);
        mecanumEncoderDrive(1289.05, 0.0, 0.0, AUTO_SPEED); //go under bridge
     }
 
     public void deliverSkystones(boolean isRedSide, VuforiaNav v) {
        double m = isRedSide ? -1.0 : 1.0;
+       moveArmTo(ARM_UP_POS);
+       setArmOpen(true);
        mecanumEncoderDrive(0.0, 762.0, 0.0, AUTO_SPEED); //drive in front of skystones
        goToSkystone(v); //drive in front of one skystone
        mecanumEncoderDrive(0.0, 304.0, 0.0, AUTO_SPEED); //drive forwards into the skystone
-       //TODO: lower arm and close
+       moveArmTo(defaultArmPos);
+       opmode.sleep(500);
+       setArmOpen(false);
        mecanumEncoderDrive(0.0, -950.0, 0.0, AUTO_SPEED); //drive back
        IMUTurn(-90 * (int)m, TURN_SPEED);
        mecanumEncoderDrive(0.0, 2757.0, 0.0, AUTO_SPEED); //drive to foundation
-       //TODO: release skystone
+       setArmOpen(true);
+       moveArmTo(ARM_UP_POS);
        mecanumEncoderDrive(680.0 * m, 0.0, 0.0, AUTO_SPEED); //go to where poster is visible
        v.moveTo(-914.4 * m, -950.0, VuforiaNav.MoveMode.X_THEN_Y, VuforiaNav.VuforiaBackup.ENCODER_DRIVE, 0.0, -2750.0, this); //move back to legos
        IMUTurn(90 * (int)m, TURN_SPEED);
        goToSkystone(v);
        mecanumEncoderDrive(0.0, 304.0, 0.0, AUTO_SPEED); //drive forwards into the skystone
-       //TODO: lower arm and close
+       moveArmTo(defaultArmPos);
+       opmode.sleep(500);
+       setArmOpen(false);
        mecanumEncoderDrive(0.0, -950.0, 0.0, AUTO_SPEED); //drive back
        IMUTurn(-90 * (int)m, TURN_SPEED);
        mecanumEncoderDrive(0.0, 2757.0, 0.0, AUTO_SPEED); //drive to foundation
-       //TODO: release skystone
+       setArmOpen(true);
+       moveArmTo(ARM_UP_POS);
        mecanumEncoderDrive(680.0 * m, 0.0, 0.0, AUTO_SPEED); //go to where poster is visible
        v.moveTo(-900.6 * m, 1828.8, VuforiaNav.MoveMode.X_THEN_Y, VuforiaNav.VuforiaBackup.ENCODER_DRIVE, 0.0, -850.9, this); //move back under bridge
     }
