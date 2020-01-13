@@ -41,7 +41,7 @@ import java.io.File;
 /**
  * 
  */
-@Disabled
+// @Disabled
 @TeleOp(name="RagBot Style (Non - Smooth)", group="Scotbotics")
 
 public class RagBotStyle extends LinearOpMode {

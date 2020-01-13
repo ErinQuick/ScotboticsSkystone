@@ -32,6 +32,7 @@
 package org.firstinspires.ftc.teamcode;
 
 import com.qualcomm.hardware.bosch.BNO055IMU;
+import com.qualcomm.hardware.bosch.JustLoggingAccelerationIntegrator;
 import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
@@ -46,6 +47,8 @@ import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesOrder;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesReference;
 import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
+import org.firstinspires.ftc.robotcore.external.navigation.Position;
+import org.firstinspires.ftc.robotcore.external.navigation.Velocity;
 import java.util.List;
 
 /**
@@ -75,6 +78,7 @@ public class ScotBot {
 
     public static final double COUNTS_PER_MM = 6.518225; // don't tell Mr. Savage this has too many significant figures
     public static final double MECANUM_SIDE_MULTIPLIER = 2.0; //is this right? I thought mecanum was working but this looks wrong
+    public static final int COUNTS_PER_FULL_TURN = 200;
 
     public static final double TURN_SPEED = 0.6;
     public static final double AUTO_SPEED = 0.5;
@@ -160,18 +164,16 @@ public class ScotBot {
         }
 
         BNO055IMU.Parameters parameters = new BNO055IMU.Parameters();
-        parameters.mode = BNO055IMU.SensorMode.IMU;
         parameters.angleUnit = BNO055IMU.AngleUnit.DEGREES;
         parameters.accelUnit = BNO055IMU.AccelUnit.METERS_PERSEC_PERSEC;
-        parameters.loggingEnabled = false;
+        parameters.calibrationDataFile = "BNO055IMUCalibration.json";
+        parameters.loggingEnabled = true;
+        parameters.loggingTag = "IMU";
+        parameters.accelerationIntegrationAlgorithm = new JustLoggingAccelerationIntegrator();
 
         imu = ahwMap.get(BNO055IMU.class, "imu");
         imu.initialize(parameters);
-
-        while (!mainopmode.isStopRequested() && !imu.isGyroCalibrated()) {
-           mainopmode.sleep(50);
-           mainopmode.idle();
-        }
+        imu.startAccelerationIntegration(new Position(), new Velocity(), 1000);
     }
 
     // public void calibrateArm(){
@@ -232,6 +234,67 @@ public class ScotBot {
 
     public void mecanumDrive(double x, double y, double turn) {
        mecanumDrive(x,y,turn,false);
+    }
+
+    public void mecanumTurn(double degrees, double speed) {
+       int flTarget;
+       int brTarget;
+       int frTarget;
+       int blTarget; // Target positions for wheels
+
+        if (opmode.opModeIsActive()) {
+            leftFront.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+            rightBack.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+            leftBack.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+            rightFront.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+
+            flTarget = (leftFront.getCurrentPosition() + COUNTS_PER_FULL_TURN * degrees/360.0;
+            brTarget = (rightBack.getCurrentPosition() - COUNTS_PER_FULL_TURN * degrees/360.0;
+            frTarget = (rightFront.getCurrentPosition() - COUNTS_PER_FULL_TURN * degrees/360.0;
+            blTarget = (leftBack.getCurrentPosition() + COUNTS_PER_FULL_TURN * degrees/360.0;
+
+            leftFront.setTargetPosition(flTarget);
+            rightBack.setTargetPosition(brTarget);
+            rightFront.setTargetPosition(frTarget);
+            leftBack.setTargetPosition(blTarget);
+
+            // Turn On RUN_TO_POSITION
+            //
+            leftFront.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+            //
+            rightBack.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+            //
+            leftBack.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+            //
+            rightFront.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+
+            encoderTimeoutTimer.reset();
+
+            leftFront.setPower(speed * flMultiplier);
+            rightBack.setPower(speed * brMultiplier);
+            rightFront.setPower(speed * frMultiplier);
+            leftBack.setPower(speed * blMultiplier);
+
+            while (opmode.opModeIsActive() &&
+                    (encoderTimeoutTimer.seconds() < ENCODER_TIMEOUT) &&
+                    (rightFront.isBusy() && rightBack.isBusy() && leftBack.isBusy() && leftFront.isBusy())) {
+                //do nothing
+            }
+
+            // Stop all motion;
+            leftFront.setPower(0);
+            rightFront.setPower(0);
+            leftBack.setPower(0);
+            rightBack.setPower(0);
+
+            
+            // Turn off RUN_TO_POSITION
+            leftFront.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+            rightBack.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+            leftBack.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+            rightFront.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+
+        }
     }
 
     //Drive to relative coordinates in millimeters
@@ -349,9 +412,9 @@ public class ScotBot {
 
     public void repositionDragFoundation(boolean isRedSide, VuforiaNav v) { //This assumes it is behind the foundation and just drives forward to grab it.
        double m = isRedSide ? -1.0 : 1.0;
-       mecanumEncoderDrive(0.0, 750.0, 0.0, AUTO_SPEED); //drive to foundation
+       mecanumEncoderDrive(0.0, -790.0, 0.0, AUTO_SPEED); //drive to foundation
        setPullerUp(false);
-       mecanumEncoderDrive(0.0, -770.0, 0.0, FOUNDATION_PULL_SPEED); //drive back sloooowly
+       mecanumEncoderDrive(0.0, 820.0, 0.0, FOUNDATION_PULL_SPEED); //drive back sloooowly
        setPullerUp(true);
        mecanumEncoderDrive(1289.05, 0.0, 0.0, AUTO_SPEED); //go under bridge
     }
@@ -367,20 +430,20 @@ public class ScotBot {
        opmode.sleep(500);
        setArmOpen(false);
        mecanumEncoderDrive(0.0, -950.0, 0.0, AUTO_SPEED); //drive back
-       IMUTurn(-90 * (int)m, TURN_SPEED);
+       mecanumTurn(-90.0 * m, TURN_SPEED);
        mecanumEncoderDrive(0.0, 2757.0, 0.0, AUTO_SPEED); //drive to foundation
        setArmOpen(true);
        moveArmTo(ARM_UP_POS);
        mecanumEncoderDrive(680.0 * m, 0.0, 0.0, AUTO_SPEED); //go to where poster is visible
        v.moveTo(-914.4 * m, -950.0, VuforiaNav.MoveMode.X_THEN_Y, VuforiaNav.VuforiaBackup.ENCODER_DRIVE, 0.0, -2750.0, this); //move back to legos
-       IMUTurn(90 * (int)m, TURN_SPEED);
+       mecanumTurn(90.0 * m, TURN_SPEED);
        goToSkystone(v);
        mecanumEncoderDrive(0.0, 304.0, 0.0, AUTO_SPEED); //drive forwards into the skystone
        moveArmTo(defaultArmPos);
        opmode.sleep(500);
        setArmOpen(false);
        mecanumEncoderDrive(0.0, -950.0, 0.0, AUTO_SPEED); //drive back
-       IMUTurn(-90 * (int)m, TURN_SPEED);
+       mecanumTurn(-90.0 * m, TURN_SPEED);
        mecanumEncoderDrive(0.0, 2757.0, 0.0, AUTO_SPEED); //drive to foundation
        setArmOpen(true);
        moveArmTo(ARM_UP_POS);

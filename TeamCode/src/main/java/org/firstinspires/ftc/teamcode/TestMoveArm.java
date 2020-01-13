@@ -59,7 +59,7 @@ public class TestMoveArm extends LinearOpMode {
         telemetry.addLine("Started");
         telemetry.update();
 
-        while (opmodeIsActive()) {
+        while (opModeIsActive()) {
             if (gamepad1.a) {
                 robot.moveArmTo(ScotBot.ARM_UP_POS);
             }
