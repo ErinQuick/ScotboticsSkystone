@@ -138,9 +138,9 @@ public class SmoothStopDrive extends LinearOpMode {
          }
 
          if (currentGamepad.right_bumper) {
-             robot.setArmOpen(false);
-         } else if (currentGamepad.left_bumper) {
              robot.setArmOpen(true);
+         } else if (currentGamepad.left_bumper) {
+             robot.setArmOpen(false);
          }
          // Pace this loop so jaw action is reasonable speed.
          sleep(50);
