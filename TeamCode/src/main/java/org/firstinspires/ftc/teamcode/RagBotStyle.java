@@ -29,6 +29,9 @@
 
 package org.firstinspires.ftc.teamcode;
 
+import android.media.MediaPlayer;
+import android.net.Uri;
+
 import com.qualcomm.ftccommon.SoundPlayer;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
@@ -51,8 +54,9 @@ public class RagBotStyle extends LinearOpMode {
     // Point to sound files on the phone's drive
     private String soundPath = "/FIRST/sounds";
     private File beepSound = new File("/sdcard" + soundPath + "/beep.mp3");
-    private File pipeSound = new File("/sdcard" + soundPath + "/pipes.mp3");
+    private Uri pipeSound = Uri.parse("/sdcard" + soundPath + "/pipes.mp3");
     private boolean firstPress;
+    MediaPlayer pipes;
 
     @Override
     public void runOpMode() {
@@ -86,8 +90,14 @@ public class RagBotStyle extends LinearOpMode {
                 }
                 telemetry.update();
             } else if(currentGamepad.y && firstPress) {
-                SoundPlayer.getInstance().startPlaying(hardwareMap.appContext, pipeSound);
+                pipes = MediaPlayer.create(hardwareMap.appContext, pipeSound);
+                pipes.start();
                 firstPress = false;
+                telemetry.addLine("█▀ █ █▀▀ █▄▀   █▀█ █ █▀█ █▀▀ █▀");
+                telemetry.addLine("▄█ █ █▄▄ █░█   █▀▀ █ █▀▀ ██▄ ▄█");
+                telemetry.update();
+            } else if(currentGamepad.x){
+                pipes.stop();
             }
             // Run wheels in POV mode (note: The joystick goes negative when pushed forwards, so negate it)
             // In this mode the Left stick moves the robot fwd and back, the Right stick turns left and right.
@@ -98,8 +108,6 @@ public class RagBotStyle extends LinearOpMode {
             double arm = Math.pow(currentGamepad.left_stick_y, 3) * -1;
             robot.mecanumDrive(driveX, driveY, turn);
             robot.armVertical.setPower(arm);
-            telemetry.addData("Servo 1 Position:", robot.baseplatePuller1.getPosition());
-            telemetry.update();
             if(currentGamepad.dpad_up){
                 robot.baseplatePuller0.setPosition(robot.BASEPLATE_PULLER_0_UP);
                 robot.baseplatePuller1.setPosition(robot.BASEPLATE_PULLER_1_UP);
