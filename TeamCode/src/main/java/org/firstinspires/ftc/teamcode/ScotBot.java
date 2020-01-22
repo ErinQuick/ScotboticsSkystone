@@ -193,7 +193,9 @@ public class ScotBot {
         while (opmode.opModeIsActive() && (encoderTimeoutTimer.seconds() < ENCODER_TIMEOUT) && armVertical.isBusy()) {
             telemetry.addData("Arm Target:", position + defaultArmPos);
             telemetry.addData("Arm Current:", armVertical.getCurrentPosition());
+            telemetry.update();
         }
+        armVertical.setPower(0);
         armVertical.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
     }
 
