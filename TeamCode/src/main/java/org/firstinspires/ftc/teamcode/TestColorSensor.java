@@ -36,29 +36,15 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
  * 
  */
 
-@Autonomous(name="Drive to poster", group="Scotbotics")
+@Autonomous(name="Test Color Sensor", group="Scotbotics")
 
-public class TestDriveToPoster extends LinearOpMode {
+public class TestColorSensor extends LinearOpMode {
 
     /* Declare OpMode members. */
     ScotBot robot;   // Use a Scotbot's hardware
-    VuforiaNav v;
-
     @Override
     public void runOpMode() {
-
         robot = new ScotBot(hardwareMap, telemetry, this);
-        v = new VuforiaNav(robot);
-
-        // Send telemetry message to signify robot waiting;
-        telemetry.addLine("Press start to go in front of top top right poster with the droid (914.4, 1200)");    //
-        telemetry.update();
-
-        // Wait for the game to start (driver presses PLAY)
-        waitForStart();
-        telemetry.addLine("Started");
-        telemetry.update();
-
-        v.moveTo(914.4,1200.0, VuforiaNav.MoveMode.X_THEN_Y,VuforiaNav.VuforiaBackup.NOTHING,robot);
+        //Code Goes Here
     }
 }
