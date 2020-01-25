@@ -102,7 +102,7 @@ public class RagBotStyle extends LinearOpMode {
             // Run wheels in POV mode (note: The joystick goes negative when pushed forwards, so negate it)
             // In this mode the Left stick moves the robot fwd and back, the Right stick turns left and right.
             // This way it's also easy to just drive straight, or just turn.
-            double driveX = Math.pow(currentGamepad.right_stick_x, 3);
+            double driveX = Math.pow(currentGamepad.right_stick_x, 3) * -1;
             double driveY = Math.pow(currentGamepad.right_stick_y, 3);
             double turn  =  Math.pow(currentGamepad.left_stick_x, 3);
             double arm = Math.pow(currentGamepad.left_stick_y, 3) * -1;
