@@ -85,7 +85,7 @@ public class ScotBot {
     public static final double AUTO_SPEED = 0.5;
     public static final double ARM_TELEOP_SPEED = 100.0;
     public static final double ARM_POWER = 0.8;
-    public static final int ARM_UP_POS = 100;
+    public static final int ARM_UP_POS = 5000;
     public static final double ARM_OPEN_POS = 0.5;
     public static final double ARM_CLOSED_POS = 1.0;
     public static final double FOUNDATION_PULL_SPEED = 0.3;
@@ -195,6 +195,8 @@ public class ScotBot {
             telemetry.addData("Arm Current:", armVertical.getCurrentPosition());
             telemetry.update();
         }
+        telemetry.addData("Arm status: ", "reached target position");
+        telemetry.update();
         armVertical.setPower(0);
         armVertical.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
     }
@@ -418,10 +420,14 @@ public class ScotBot {
        mecanumEncoderDrive(0.0, -790.0, 0.0, AUTO_SPEED); //drive to foundation
        setPullerUp(false);
        opmode.sleep(1000);
-       mecanumEncoderDrive(0.0, 650.0, 0.0, FOUNDATION_PULL_SPEED); //drive back sloooowly (820 if you want to move back all the way)
-       encoderTurn(100.0 * m, 0.2);
+       encoderTurn(-35.0 * m, 0.2);
+       mecanumEncoderDrive(0.0, 500.0, 0.0, FOUNDATION_PULL_SPEED); //drive back sloooowly (820 if you want to move back all the way)
+       encoderTurn(-80.0 * m, 0.1);
        setPullerUp(true);
-       mecanumEncoderDrive(0.0, 1200.0, 0.0, AUTO_SPEED);
+       mecanumEncoderDrive(0.0, -300.0, 0.0, FOUNDATION_PULL_SPEED);
+       mecanumEncoderDrive(0.0, 500.0, 0.0, AUTO_SPEED);
+       encoderTurn(-10.0 * m, 0.4);
+       mecanumEncoderDrive(0.0, 550.0, 0.0, AUTO_SPEED);
        // mecanumEncoderDrive(1289.05 * m, 0.0, 0.0, AUTO_SPEED); //go under bridge
     }
 
@@ -561,6 +567,7 @@ public class ScotBot {
           }
           if (visibleTimer.seconds() > 2.0) {
              speed = speed > 0 ? -0.3 : 0.3; //switch direction if not visible
+             visibleTimer.reset();
           }
           mecanumDrive(speed,0.0,0.0);
        }
